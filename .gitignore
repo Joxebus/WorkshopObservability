@@ -1,0 +1,24 @@
+# Compiled classes
+build/*
+.gradle
+.class
+.jar
+out/*
+
+# Configuration classes
+.idea/
+.iml/
+.vscode/
+
+# DevContainer - keep configuration, ignore local data
+.devcontainer/.gradle/
+.devcontainer/.vscode-server/
+.devcontainer/.vscode-server-insiders/
+
+# MacOS specific files
+.DS_Store
+
+#Claude
+CLAUDE.md
+.claude/*
+.ia/*

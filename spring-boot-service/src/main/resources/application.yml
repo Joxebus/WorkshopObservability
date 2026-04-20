@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: person-service-client
+    alias: ${SERVICE_ALIAS}
+  thymeleaf:
+    cache: false
+  datasource:
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+    url: jdbc:h2:file:~/consul-example;AUTO_SERVER=TRUE
+  h2:
+    console:
+      enabled: true
+      path: /console
+  cloud:
+    consul:
+      enabled: true
+
+endpoints:
+  consul:
+    enabled: true
+
+# To use gorm you need this configuration at this level
+hibernate:
+  hbm2ddl:
+    auto: create-drop
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logstash:
+  host: localhost
+
+logging:
+  config: classpath:log-config.xml
+

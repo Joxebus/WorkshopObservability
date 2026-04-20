@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty name="service_name" source="spring.application.name"/>
+    <springProperty name="service_alias" source="spring.application.alias"/>
+    <springProperty name="service_port" source="server.port"/>
+    <springProperty name="logstash_host" source="logstash.host"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstash_host}:4560</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"service_name":"${service_name}", "service_alias":"${service_alias}", "service_port":"${service_port}"}</customFields>
+            <fieldNames>
+                <message>message</message>
+                <level>log_level</level>
+            </fieldNames>
+        </encoder>
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+    </appender>
+
+    <logger name="org.springframework">
+        <level value="WARN"/>
+    </logger>
+    <logger name="org.grails">
+        <level value="WARN" />
+    </logger>
+    <logger name="com.netflix">
+        <level value="WARN" />
+    </logger>
+    <logger name="org.hibernate">
+        <level value="info" />
+    </logger>
+    <logger name="org.hibernate">
+        <level value="WARN"/>
+    </logger>
+    <logger name="org.apache">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="com.zaxxer.hikari">
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="io.github.joxebus">
+        <level value="debug"/>
+    </logger>
+    <logger name="io.github.joxebus.challenge.config">
+        <level value="info"/>
+    </logger>
+
+    <root level="debug">
+        <appender-ref ref="logstash"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

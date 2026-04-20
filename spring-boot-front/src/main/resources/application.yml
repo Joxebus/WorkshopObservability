@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: person-front
+    alias: ${SERVICE_ALIAS}
+  thymeleaf:
+    cache: false
+  cloud:
+    consul:
+      enabled: true
+
+# Disable security configuration
+management:
+  security:
+    enabled: false
+endpoints:
+  consul:
+    enabled: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logstash:
+  host: localhost
+
+logging:
+  config: classpath:log-config.xml
+  level:
+    org.thymeleaf: WARN
+
+# This is a configuration defined to setup the RestTemplate
+rest:
+  consul:
+    root:
+      uri: "http://person-service-client"

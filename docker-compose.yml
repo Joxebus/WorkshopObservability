@@ -1,0 +1,152 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.2
+    container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "4560:4560"
+      - "5044:5044"
+    volumes:
+      - ./logstash-config:/usr/share/logstash/pipeline
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  consul:
+    image: hashicorp/consul:latest
+    container_name: "dev-consul"
+    environment:
+      - "CONSUL_BIND_INTERFACE=eth0"
+    ports:
+      - "8301:8301"
+      - "8400:8400"
+      - "8500:8500" # Consul Manager
+      - "8600:53/udp"
+    command: "agent -server -bootstrap -ui -client=0.0.0.0 -bind='{{ GetInterfaceIP \"eth0\" }}'"
+  mysql:
+    image: mysql:5.7
+    platform: linux/amd64
+    container_name: mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=consul-example
+      - MYSQL_USER=consul
+      - MYSQL_PASSWORD=example
+    ports:
+      - "3306:3306"
+  front-1:
+    build: ./spring-boot-front
+    container_name: front
+    environment:
+      - SERVER_PORT=8080
+      - SERVICE_ALIAS=front
+    ports:
+      - "8080:8080"
+    links:
+      - consul
+      - logstash
+    depends_on:
+      - consul
+      - logstash
+  service-1:
+    build: ./spring-boot-service
+    container_name: service-1
+    environment:
+      - SERVER_PORT=8081
+      - SERVICE_ALIAS=service-1
+    ports:
+      - "8081:8081"
+    links:
+      - consul
+      - mysql
+      - logstash
+    depends_on:
+      - mysql
+      - consul
+      - logstash
+  service-2:
+    build: ./spring-boot-service
+    container_name: service-2
+    environment:
+      - SERVER_PORT=8082
+      - SERVICE_ALIAS=service-2
+    ports:
+      - "8082:8082"
+    links:
+      - consul
+      - mysql
+      - logstash
+    depends_on:
+      - service-1
+  service-3:
+    build: ./spring-boot-service
+    container_name: service-3
+    restart: always
+    environment:
+      - SERVER_PORT=8083
+      - SERVICE_ALIAS=service-3
+    ports:
+      - "8083:8083"
+    links:
+      - consul
+      - mysql
+      - logstash
+    depends_on:
+      - service-2
+
+volumes:
+  elasticsearch_data:
+    driver: local

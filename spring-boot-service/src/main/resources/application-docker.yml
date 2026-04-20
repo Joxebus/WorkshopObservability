@@ -1,0 +1,35 @@
+spring:
+  thymeleaf:
+    cache: false
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: consul
+    password: example
+    url: jdbc:mysql://mysql:3306/consul-example?autoReconnect=true&useSSL=false
+  cloud:
+    consul:
+      enabled: true
+
+# Disable security configuration
+management:
+  security:
+    enabled: false
+endpoints:
+  consul:
+    enabled: true
+
+# To use gorm you need this configuration at this level
+hibernate:
+  hbm2ddl:
+    auto: update
+  dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logstash:
+  host: localhost
+
+logging:
+  config: classpath:log-config.xml
+

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <title>Spring Boot with Consul</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <div th:replace="fragments/header :: header-css"/>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"/>
+
+<div class="container">
+    <h1>Spring Boot + Consul for service discovery</h1>
+
+    <p>This project is an example of how to get running Spring Boot with Consul</p>
+
+    <h3>Consul</h3>
+    <p>
+        Consul is a distributed service mesh to connect, secure, and configure services across any runtime platform and public or private cloud.
+    </p>
+
+    <h3>ELK</h3>
+
+    <p>
+        <b>ELK</b> is the acronym for three open source projects: Elasticsearch, Logstash, and Kibana. Elasticsearch is a search and analytics engine.
+        Logstash is a server‑side data processing pipeline that ingests data from multiple sources simultaneously, transforms it, and then sends
+        it to a "stash" like Elasticsearch. Kibana lets users visualize data with charts and graphs in Elasticsearch.
+    </p>
+
+    <h3>Spring Boot Cloud Consul</h3>
+    <p>
+        Spring Cloud Consul provides Consul integrations for Spring Boot apps through autoconfiguration and binding to the Spring Environment and
+        other Spring programming model idioms. With a few simple annotations you can quickly enable and configure the common patterns inside your
+        application and build large distributed systems with Hashicorp's Consul. The patterns provided include Service Discovery, Distributed Configuration and Control Bus.
+    </p>
+
+</div>
+<!-- /.container -->
+
+<div th:replace="fragments/footer :: footer"/>
+</body>
+</html>
