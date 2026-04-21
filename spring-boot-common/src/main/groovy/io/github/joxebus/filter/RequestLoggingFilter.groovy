@@ -51,30 +51,17 @@ class RequestLoggingFilter extends OncePerRequestFilter {
             FilterChain filterChain) {
 
         try {
-            // Check if request_id is propagated from upstream service
-            String requestId = request.getHeader(HEADER_REQUEST_ID)
-            String userIp = request.getHeader(HEADER_USER_IP)
-            String httpMethod = request.getHeader(HEADER_HTTP_METHOD)
-            String requestUri = request.getHeader(HEADER_REQUEST_URI)
+            // Use Elvis operator to either use propagated headers or generate/extract new values
+            String requestId = request.getHeader(HEADER_REQUEST_ID) ?: UUID.randomUUID().toString()
 
-            if (requestId) {
-                // Headers exist - this is a propagated request from upstream (e.g., Frontend → Backend)
-                MDC.put(MDC_REQUEST_ID, requestId)
-                MDC.put(MDC_USER_IP, userIp ?: request.getRemoteAddr())
-                MDC.put(MDC_HTTP_METHOD, httpMethod ?: request.getMethod())
-                MDC.put(MDC_REQUEST_URI, requestUri ?: request.getRequestURI())
+            MDC.put(MDC_REQUEST_ID, requestId)
+            MDC.put(MDC_USER_IP, request.getHeader(HEADER_USER_IP) ?: request.remoteAddr)
+            MDC.put(MDC_HTTP_METHOD, request.getHeader(HEADER_HTTP_METHOD) ?: request.method)
+            MDC.put(MDC_REQUEST_URI, request.getHeader(HEADER_REQUEST_URI) ?: request.requestURI)
 
-                log.debug("Received propagated request_id: {} from upstream service", requestId)
-            } else {
-                // No headers - this is a direct request (e.g., browser → Frontend, or direct API call)
-                requestId = UUID.randomUUID().toString()
-                MDC.put(MDC_REQUEST_ID, requestId)
-                MDC.put(MDC_USER_IP, request.getRemoteAddr())
-                MDC.put(MDC_HTTP_METHOD, request.getMethod())
-                MDC.put(MDC_REQUEST_URI, request.getRequestURI())
-
-                log.debug("Generated new request_id: {} for direct request", requestId)
-            }
+            // Single log statement using GString for conditional message
+            String source = request.getHeader(HEADER_REQUEST_ID) ? "upstream service" : "direct request"
+            log.debug("${request.getHeader(HEADER_REQUEST_ID) ? 'Received propagated' : 'Generated new'} request_id: ${requestId} ${request.getHeader(HEADER_REQUEST_ID) ? 'from' : 'for'} ${source}")
 
             // Continue filter chain
             filterChain.doFilter(request, response)
