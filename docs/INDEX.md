@@ -1,7 +1,7 @@
 # Documentation Index
 
-**Version**: 1.0  
-**Last Updated**: April 20, 2026  
+**Version**: 1.1  
+**Last Updated**: April 21, 2026  
 **Project**: Spring Boot Microservices with Consul & ELK Stack
 
 ---
@@ -122,6 +122,38 @@
 - Load testing scripts and baseline templates
 
 **When to use**: Understanding application performance, setting up monitoring dashboards, creating alerts, troubleshooting performance issues, or integrating with external monitoring platforms.
+
+---
+
+### 5. Spring Boot 3 Migration Log
+**File**: [`MIGRATION_LOG.md`](./MIGRATION_LOG.md)  
+**Size**: ~224 lines  
+**Purpose**: Chronological log of all changes made during the Spring Boot 3.2.3 migration
+
+**Contents**:
+- **Migration Timeline**: All 17 commits organized into 5 phases
+- **Summary Statistics**: Duration, commits, documentation lines, tests, modules
+- **Technology Stack Evolution**: Before/after comparison (Spring Boot 1.5.11 → 3.2.3)
+- **Key Improvements**: Performance, Observability, Architecture, Documentation, Testing
+- **Breaking Changes**: Namespace changes, GORM migration, configuration updates
+- **Custom Metrics**: 32 beans across service and frontend layers
+- **Grafana Dashboards**: 3 dashboards with 20+ panels
+- **Distributed Tracing**: MDC propagation implementation
+- **Post-Migration Checklist**: All verification items
+
+**Timeline Format**:
+```
+YYYY-MM-DD | Commit message
+```
+
+**Migration Phases**:
+1. Initial Setup (2 commits)
+2. Core Migration (3 commits) - Spring Boot 3.2.3, GORM to JPA, MySQL 8.0
+3. Documentation (6 commits) - 5,500+ lines of guides
+4. Observability Improvements (4 commits) - Metrics, logging, filters
+5. Distributed Tracing & Monitoring (2 commits) - MDC propagation, Grafana
+
+**When to use**: Understanding what changed during migration, tracking technology evolution, reference for future migrations, or documenting migration best practices.
 
 ---
 
