@@ -595,6 +595,431 @@ curl 'http://localhost:8081/actuator/metrics/person.operations?tag=result:failed
 
 ---
 
+### Implemented Custom Metrics in This Project
+
+This project has **12 custom business and operational metrics** implemented across all layers using Micrometer. Below is the complete reference for all implemented metrics.
+
+#### Service Layer Metrics (PersonServiceImpl)
+
+**1. person.operations.total** (Counter)
+- **Purpose**: Track all CRUD operations with result tracking
+- **Tags**: `operation` (create, update, delete, read), `result` (success, failed)
+- **Location**: `PersonServiceImpl.groovy`
+
+```bash
+# Query all operations
+curl 'http://localhost:8081/actuator/metrics/person.operations.total'
+
+# Query specific operation
+curl 'http://localhost:8081/actuator/metrics/person.operations.total?tag=operation:create&tag=result:success'
+
+# Example response
+{
+  "name": "person.operations.total",
+  "measurements": [{"statistic": "COUNT", "value": 42.0}],
+  "availableTags": [
+    {"tag": "operation", "values": ["create", "update", "delete", "read"]},
+    {"tag": "result", "values": ["success", "failed"]}
+  ]
+}
+```
+
+**Use cases**:
+- Monitor business activity (creates vs updates vs deletes)
+- Calculate error rates: `failed / (success + failed)`
+- Track most common operations
+
+---
+
+**2. person.validation.errors.total** (Counter)
+- **Purpose**: Track validation failures with field-specific details
+- **Tags**: `field` (name, lastname, email, general)
+- **Location**: `PersonServiceImpl.groovy`
+
+```bash
+# Total validation errors
+curl 'http://localhost:8081/actuator/metrics/person.validation.errors.total'
+
+# Errors for specific field
+curl 'http://localhost:8081/actuator/metrics/person.validation.errors.total?tag=field:email'
+
+# Example response
+{
+  "name": "person.validation.errors.total",
+  "measurements": [{"statistic": "COUNT", "value": 5.0}],
+  "availableTags": [
+    {"tag": "field", "values": ["name", "lastname", "email"]}
+  ]
+}
+```
+
+**Use cases**:
+- Identify problematic input patterns
+- Track data quality issues
+- Improve form validation UX
+
+---
+
+**3. person.delete.failures.total** (Counter)
+- **Purpose**: Track delete attempts on non-existent persons
+- **Location**: `PersonServiceImpl.groovy`
+
+```bash
+curl 'http://localhost:8081/actuator/metrics/person.delete.failures.total'
+```
+
+**Use cases**:
+- Monitor client errors
+- Detect UI issues (stale data)
+- Track race conditions
+
+---
+
+**4. person.repository.count** (Gauge)
+- **Purpose**: Current number of persons in database
+- **Location**: `PersonServiceImpl.groovy`
+
+```bash
+curl 'http://localhost:8081/actuator/metrics/person.repository.count'
+
+# Example response
+{
+  "name": "person.repository.count",
+  "measurements": [{"statistic": "VALUE", "value": 2.0}]
+}
+```
+
+**Use cases**:
+- Monitor data growth trends
+- Capacity planning
+- Detect mass deletion events
+
+---
+
+**5. person.operation.duration** (Timer)
+- **Purpose**: Measure duration of each operation
+- **Tags**: `operation` (save, delete, findById, findAll)
+- **Location**: `PersonServiceImpl.groovy`
+
+```bash
+# All operations
+curl 'http://localhost:8081/actuator/metrics/person.operation.duration'
+
+# Specific operation
+curl 'http://localhost:8081/actuator/metrics/person.operation.duration?tag=operation:save'
+
+# Example response
+{
+  "name": "person.operation.duration",
+  "measurements": [
+    {"statistic": "COUNT", "value": 150.0},
+    {"statistic": "TOTAL_TIME", "value": 7.5},
+    {"statistic": "MAX", "value": 0.234}
+  ]
+}
+```
+
+**Calculate average**: `TOTAL_TIME / COUNT = 7.5 / 150 = 0.05 seconds (50ms)`
+
+**Use cases**:
+- Identify slow operations
+- Track performance degradation
+- Set SLA thresholds
+
+---
+
+#### Controller Layer Metrics (PersonController - Backend)
+
+**6. person.api.requests.total** (Counter)
+- **Purpose**: HTTP API requests by endpoint and status
+- **Tags**: `endpoint`, `method`, `status` (2xx, 4xx, 5xx)
+- **Location**: `PersonController.groovy` (service)
+
+```bash
+# All API requests
+curl 'http://localhost:8081/actuator/metrics/person.api.requests.total'
+
+# Specific endpoint and method
+curl 'http://localhost:8081/actuator/metrics/person.api.requests.total?tag=endpoint:/people&tag=method:GET'
+
+# Success vs errors
+curl 'http://localhost:8081/actuator/metrics/person.api.requests.total?tag=status:2xx'
+curl 'http://localhost:8081/actuator/metrics/person.api.requests.total?tag=status:4xx'
+```
+
+**Use cases**:
+- API usage patterns
+- Error rate monitoring
+- Endpoint popularity tracking
+
+---
+
+**7. person.api.response.time** (Timer)
+- **Purpose**: API response time by endpoint
+- **Tags**: `endpoint`, `method`
+- **Location**: `PersonController.groovy` (service)
+
+```bash
+curl 'http://localhost:8081/actuator/metrics/person.api.response.time?tag=endpoint:/people&tag=method:GET'
+```
+
+**Use cases**:
+- Endpoint-specific performance
+- SLA compliance
+- Performance regression detection
+
+---
+
+#### Frontend Layer Metrics (PersonController - Frontend)
+
+**8. person.frontend.requests.total** (Counter)
+- **Purpose**: User interactions tracking
+- **Tags**: `operation` (list, create, delete), `result` (success, error)
+- **Location**: `PersonController.groovy` (front)
+
+```bash
+# All frontend operations
+curl 'http://localhost:8080/actuator/metrics/person.frontend.requests.total'
+
+# Successful list operations
+curl 'http://localhost:8080/actuator/metrics/person.frontend.requests.total?tag=operation:list&tag=result:success'
+
+# Failed operations
+curl 'http://localhost:8080/actuator/metrics/person.frontend.requests.total?tag=result:error'
+```
+
+**Use cases**:
+- User behavior analysis
+- UI error tracking
+- Feature usage statistics
+
+---
+
+**9. person.frontend.backend.errors.total** (Counter)
+- **Purpose**: Backend communication failures
+- **Tags**: `operation` (list, create, delete)
+- **Location**: `PersonController.groovy` (front)
+
+```bash
+curl 'http://localhost:8080/actuator/metrics/person.frontend.backend.errors.total?tag=operation:list'
+```
+
+**Use cases**:
+- Service discovery issues
+- Network problems
+- Backend availability monitoring
+
+---
+
+**10. person.frontend.page.render.time** (Timer)
+- **Purpose**: Page rendering duration
+- **Tags**: `page` (list, create)
+- **Location**: `PersonController.groovy` (front)
+
+```bash
+curl 'http://localhost:8080/actuator/metrics/person.frontend.page.render.time?tag=page:list'
+```
+
+**Use cases**:
+- Frontend performance monitoring
+- User experience optimization
+- Template rendering analysis
+
+---
+
+#### Bootstrap Layer Metrics (Bootstrap)
+
+**11. bootstrap.data.loaded.total** (Counter)
+- **Purpose**: Track initialization data loading
+- **Tags**: `result` (success, failed, skipped)
+- **Location**: `Bootstrap.groovy`
+
+```bash
+curl 'http://localhost:8081/actuator/metrics/bootstrap.data.loaded.total'
+
+# Example response
+{
+  "name": "bootstrap.data.loaded.total",
+  "measurements": [{"statistic": "COUNT", "value": 1.0}],
+  "availableTags": [
+    {"tag": "result", "values": ["success", "skipped"]}
+  ]
+}
+```
+
+**Use cases**:
+- Startup monitoring
+- Initial data load tracking
+- Bootstrap failure detection
+
+---
+
+**12. bootstrap.execution.time** (Timer)
+- **Purpose**: Startup initialization duration
+- **Location**: `Bootstrap.groovy`
+
+```bash
+curl 'http://localhost:8081/actuator/metrics/bootstrap.execution.time'
+```
+
+**Use cases**:
+- Startup performance
+- Cold start analysis
+- Deployment time tracking
+
+---
+
+### Quick Reference: All Custom Metrics
+
+```bash
+# List all custom metrics
+curl -s 'http://localhost:8081/actuator/metrics' | \
+  jq '.names | map(select(contains("person") or contains("bootstrap"))) | sort'
+
+# Expected output:
+[
+  "bootstrap.data.loaded.total",
+  "person.api.requests.total",
+  "person.api.response.time",
+  "person.delete.failures.total",
+  "person.frontend.backend.errors.total",
+  "person.frontend.page.render.time",
+  "person.frontend.requests.total",
+  "person.operation.duration",
+  "person.operations.total",
+  "person.repository.count",
+  "person.validation.errors.total"
+]
+```
+
+---
+
+### Common Metric Queries
+
+#### Calculate Error Rate
+```bash
+# Get total operations
+TOTAL=$(curl -s 'http://localhost:8081/actuator/metrics/person.operations.total' | jq '.measurements[0].value')
+
+# Get failed operations
+FAILED=$(curl -s 'http://localhost:8081/actuator/metrics/person.operations.total?tag=result:failed' | jq '.measurements[0].value // 0')
+
+# Calculate error rate percentage
+echo "scale=2; ($FAILED / $TOTAL) * 100" | bc
+```
+
+#### Calculate Average Response Time
+```bash
+METRICS=$(curl -s 'http://localhost:8081/actuator/metrics/person.operation.duration?tag=operation:findAll')
+
+COUNT=$(echo $METRICS | jq '.measurements[] | select(.statistic=="COUNT").value')
+TOTAL_TIME=$(echo $METRICS | jq '.measurements[] | select(.statistic=="TOTAL_TIME").value')
+
+# Average in seconds
+echo "scale=6; $TOTAL_TIME / $COUNT" | bc
+
+# Average in milliseconds
+echo "scale=2; ($TOTAL_TIME / $COUNT) * 1000" | bc
+```
+
+#### Operations Per Second
+```bash
+# Query twice with 10-second gap
+BEFORE=$(curl -s 'http://localhost:8081/actuator/metrics/person.operations.total' | jq '.measurements[0].value')
+sleep 10
+AFTER=$(curl -s 'http://localhost:8081/actuator/metrics/person.operations.total' | jq '.measurements[0].value')
+
+# Calculate ops/sec
+echo "scale=2; ($AFTER - $BEFORE) / 10" | bc
+```
+
+---
+
+### Metrics Configuration
+
+The metrics are configured in `application.yml` with global tags for service identification:
+
+**Backend** (`spring-boot-service/src/main/resources/application.yml`):
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  metrics:
+    tags:
+      application: person-service
+      instance: ${SERVER_PORT:8081}
+```
+
+**Frontend** (`spring-boot-front/src/main/resources/application.yml`):
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  metrics:
+    tags:
+      application: person-front
+      instance: ${SERVER_PORT:8080}
+```
+
+All metrics automatically include:
+- `application` tag: Identifies the service (person-service or person-front)
+- `instance` tag: Identifies the port/instance (8080, 8081, 8082, 8083)
+
+---
+
+### Testing Metrics
+
+Generate activity to populate metrics:
+
+```bash
+# Start services
+docker compose up -d
+
+# Access frontend (generates frontend metrics)
+curl http://localhost:8080/people
+
+# Access backend (generates API metrics)
+curl http://localhost:8081/people
+
+# Create a person (generates create, validation, save metrics)
+curl -X POST http://localhost:8081/people \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","lastname":"User","email":"test@example.com"}'
+
+# Delete a person (generates delete metrics)
+curl -X DELETE http://localhost:8081/people/1
+
+# Try invalid data (generates validation error metrics)
+curl -X POST http://localhost:8081/people \
+  -H "Content-Type: application/json" \
+  -d '{"name":"","lastname":"","email":"invalid"}'
+
+# Try to delete non-existent (generates failure metric)
+curl -X DELETE http://localhost:8081/people/999
+```
+
+Then query the metrics:
+
+```bash
+# Check operation counts
+curl 'http://localhost:8081/actuator/metrics/person.operations.total'
+
+# Check validation errors
+curl 'http://localhost:8081/actuator/metrics/person.validation.errors.total'
+
+# Check current person count
+curl 'http://localhost:8081/actuator/metrics/person.repository.count'
+
+# Check operation timings
+curl 'http://localhost:8081/actuator/metrics/person.operation.duration'
+```
+
+---
+
 ## 4. Consul Health Metrics
 
 ### Service Registry Metrics
