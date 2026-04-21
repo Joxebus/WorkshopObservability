@@ -1,69 +1,154 @@
 package io.github.joxebus.service.impl
 
 import io.github.joxebus.domain.Person
+import io.github.joxebus.repository.PersonRepository
 import io.github.joxebus.service.PersonService
+import jakarta.validation.ConstraintViolation
+import jakarta.validation.ConstraintViolationException
+import jakarta.validation.Validator
 import spock.lang.Specification
+import spock.lang.Subject
 
 class PersonServiceImplSpec extends Specification {
 
-    PersonService personService = new PersonServiceImpl()
+    PersonRepository personRepository = Mock()
+    Validator validator = Mock()
 
-    def "should verify PersonServiceImpl is instantiable"() {
-        expect: "service is not null"
-        personService != null
+    @Subject
+    PersonService personService = new PersonServiceImpl(
+        personRepository: personRepository,
+        validator: validator
+    )
+
+    def "should find all persons"() {
+        given: "a list of persons in the repository"
+        List<Person> persons = [
+            new Person(id: 1L, name: "Omar", lastname: "Bautista", email: "omar@email.com"),
+            new Person(id: 2L, name: "Jorge", lastname: "Valenzuela", email: "jorge@email.com")
+        ]
+        personRepository.findAll() >> persons
+
+        when: "calling findAll"
+        List<Person> result = personService.findAll()
+
+        then: "all persons are returned"
+        result.size() == 2
+        result[0].name == "Omar"
+        result[1].name == "Jorge"
     }
 
-    def "should verify PersonServiceImpl implements PersonService interface"() {
-        expect: "service implements the interface"
-        personService instanceof PersonService
+    def "should find person by id"() {
+        given: "a person exists in the repository"
+        Person person = new Person(id: 1L, name: "Omar", lastname: "Bautista", email: "omar@email.com")
+        personRepository.findById(1L) >> Optional.of(person)
+
+        when: "calling findById with existing id"
+        Person result = personService.findById(1L)
+
+        then: "the person is returned"
+        result != null
+        result.id == 1L
+        result.name == "Omar"
+        result.email == "omar@email.com"
     }
 
-    def "should have findAll method"() {
-        when: "calling findAll method"
-        try {
-            personService.findAll()
-        } catch (IllegalStateException e) {
-            // Expected when GORM not initialized in unit test
-        }
+    def "should return null when person not found"() {
+        given: "person does not exist in repository"
+        personRepository.findById(999L) >> Optional.empty()
 
-        then: "method exists (no MissingMethodException)"
-        true
+        when: "calling findById with non-existing id"
+        Person result = personService.findById(999L)
+
+        then: "null is returned"
+        result == null
     }
 
-    def "should have findById method"() {
-        when: "calling findById method with an ID"
-        try {
-            personService.findById(1L)
-        } catch (IllegalStateException e) {
-            // Expected when GORM not initialized in unit test
-        }
-
-        then: "method exists (no MissingMethodException)"
-        true
-    }
-
-    def "should have save method"() {
-        when: "calling save method with a person"
+    def "should save valid person"() {
+        given: "a valid person"
         Person person = new Person(name: "Test", lastname: "User", email: "test@example.com")
-        try {
-            personService.save(person)
-        } catch (IllegalStateException e) {
-            // Expected when GORM not initialized in unit test
-        }
+        Person savedPerson = new Person(id: 1L, name: "Test", lastname: "User", email: "test@example.com")
 
-        then: "method exists (no MissingMethodException)"
-        true
+        when: "calling save"
+        Person result = personService.save(person)
+
+        then: "person is saved with generated id"
+        1 * validator.validate(person) >> new HashSet<ConstraintViolation<Person>>()
+        1 * personRepository.save(person) >> savedPerson
+        result.id == 1L
+        result.name == "Test"
+        result.email == "test@example.com"
     }
 
-    def "should have delete method"() {
-        when: "calling delete method with an ID"
-        try {
-            personService.delete(1L)
-        } catch (IllegalStateException e) {
-            // Expected when GORM not initialized in unit test
-        }
+    def "should throw exception when saving invalid person"() {
+        given: "an invalid person with validation errors"
+        Person person = new Person(name: "", lastname: "User", email: "invalid-email")
+        ConstraintViolation<Person> violation = Mock()
 
-        then: "method exists (no MissingMethodException)"
-        true
+        when: "calling save with invalid person"
+        personService.save(person)
+
+        then: "ConstraintViolationException is thrown"
+        1 * validator.validate(person) >> ([violation] as Set)
+        0 * personRepository.save(_)
+        thrown(ConstraintViolationException)
+    }
+
+    def "should delete existing person"() {
+        given: "a person exists in the repository"
+        Person person = new Person(id: 1L, name: "Omar", lastname: "Bautista", email: "omar@email.com")
+
+        when: "calling delete with existing id"
+        boolean result = personService.delete(1L)
+
+        then: "person is deleted and true is returned"
+        1 * personRepository.findById(1L) >> Optional.of(person)
+        1 * personRepository.delete(person)
+        result == true
+    }
+
+    def "should return false when deleting non-existing person"() {
+        when: "calling delete with non-existing id"
+        boolean result = personService.delete(999L)
+
+        then: "false is returned and delete is not called"
+        1 * personRepository.findById(999L) >> Optional.empty()
+        0 * personRepository.deleteById(_)
+        result == false
+    }
+
+    def "should validate person fields on save"() {
+        given: "a person with blank fields"
+        Person person = new Person(name: "", lastname: "", email: "")
+        ConstraintViolation<Person> violation1 = Mock()
+        ConstraintViolation<Person> violation2 = Mock()
+        ConstraintViolation<Person> violation3 = Mock()
+
+        when: "calling save"
+        personService.save(person)
+
+        then: "validation exception is thrown with all violations"
+        1 * validator.validate(person) >> ([violation1, violation2, violation3] as Set)
+        ConstraintViolationException ex = thrown()
+        ex.constraintViolations.size() == 3
+    }
+
+    def "should handle null person in save"() {
+        when: "calling save with null"
+        personService.save(null)
+
+        then: "NullPointerException is thrown"
+        thrown(NullPointerException)
+    }
+
+    def "should find all returns empty list when no persons"() {
+        given: "repository is empty"
+        personRepository.findAll() >> []
+
+        when: "calling findAll"
+        List<Person> result = personService.findAll()
+
+        then: "empty list is returned"
+        result != null
+        result.isEmpty()
     }
 }

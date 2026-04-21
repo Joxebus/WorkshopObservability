@@ -6,15 +6,29 @@ spring:
     cache: false
   cloud:
     consul:
+      discovery:
+        enabled: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${SERVER_PORT:8080}:${random.value}
+        prefer-ip-address: false
+        fail-fast: false
+        register: true
+      host: localhost
+      port: 8500
       enabled: true
+    loadbalancer:
+      ribbon:
+        enabled: false
 
-# Disable security configuration
 management:
-  security:
-    enabled: false
-endpoints:
-  consul:
-    enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
 server:
   port: ${SERVER_PORT:8080}
@@ -26,6 +40,8 @@ logging:
   config: classpath:log-config.xml
   level:
     org.thymeleaf: WARN
+    io.github.joxebus: DEBUG
+    org.springframework.cloud.consul: DEBUG
 
 # This is a configuration defined to setup the RestTemplate
 rest:

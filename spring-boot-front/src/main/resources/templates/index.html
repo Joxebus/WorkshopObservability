@@ -3,11 +3,11 @@
 <head lang="en">
     <title>Spring Boot with Consul</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <div th:replace="fragments/header :: header-css"/>
+    <div th:replace="~{fragments/header :: header-css}"/>
 </head>
 <body>
 
-<div th:replace="fragments/header :: header"/>
+<div th:replace="~{fragments/header :: header}"/>
 
 <div class="container">
     <h1>Spring Boot + Consul for service discovery</h1>
@@ -37,6 +37,6 @@
 </div>
 <!-- /.container -->
 
-<div th:replace="fragments/footer :: footer"/>
+<div th:replace="~{fragments/footer :: footer}"/>
 </body>
 </html>

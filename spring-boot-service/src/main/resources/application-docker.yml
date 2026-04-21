@@ -1,35 +1,35 @@
 spring:
-  thymeleaf:
-    cache: false
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     username: consul
     password: example
-    url: jdbc:mysql://mysql:3306/consul-example?autoReconnect=true&useSSL=false
+    url: jdbc:mysql://mysql:3306/consul-example?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    show-sql: false
   cloud:
     consul:
-      enabled: true
-
-# Disable security configuration
-management:
-  security:
-    enabled: false
-endpoints:
-  consul:
-    enabled: true
-
-# To use gorm you need this configuration at this level
-hibernate:
-  hbm2ddl:
-    auto: update
-  dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      discovery:
+        enabled: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${SERVER_PORT:8081}:${random.value}
+        prefer-ip-address: false
+      host: consul
+      port: 8500
 
 server:
   port: ${SERVER_PORT:8081}
 
 logstash:
-  host: localhost
+  host: logstash
 
 logging:
   config: classpath:log-config.xml
-
+  level:
+    io.github.joxebus: INFO

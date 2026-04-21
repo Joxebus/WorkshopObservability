@@ -2,8 +2,6 @@ spring:
   application:
     name: person-service-client
     alias: ${SERVICE_ALIAS}
-  thymeleaf:
-    cache: false
   datasource:
     driver-class-name: org.h2.Driver
     username: sa
@@ -12,19 +10,38 @@ spring:
   h2:
     console:
       enabled: true
-      path: /console
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    show-sql: false
   cloud:
     consul:
+      discovery:
+        enabled: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${SERVER_PORT:8081}:${random.value}
+        hostname: ${HOSTNAME:localhost}
+        prefer-ip-address: false
+        fail-fast: false
+        register: true
+      host: localhost
+      port: 8500
       enabled: true
 
-endpoints:
-  consul:
-    enabled: true
-
-# To use gorm you need this configuration at this level
-hibernate:
-  hbm2ddl:
-    auto: create-drop
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
 
 server:
   port: ${SERVER_PORT:8081}
@@ -34,4 +51,6 @@ logstash:
 
 logging:
   config: classpath:log-config.xml
-
+  level:
+    io.github.joxebus: DEBUG
+    org.springframework.cloud.consul: DEBUG

@@ -1,4 +1,4 @@
-FROM openjdk:8u171-alpine3.7
+FROM eclipse-temurin:21-jre-alpine
 ENV SERVER_PORT 8080
 RUN apk --no-cache add curl
 EXPOSE ${SERVER_PORT}/tcp
