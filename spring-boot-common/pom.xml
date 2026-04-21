@@ -31,6 +31,31 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
 
+        <!-- Jakarta Servlet API (for RequestLoggingFilter) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Spring Web (for OncePerRequestFilter) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+
+        <!-- Spring Context (for @Component annotation) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- SLF4J API (for logging and MDC) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
         <!-- Hibernate Validator (test scope) -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
