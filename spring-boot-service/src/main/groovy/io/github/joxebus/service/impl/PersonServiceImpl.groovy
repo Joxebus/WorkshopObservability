@@ -6,11 +6,11 @@ import io.github.joxebus.service.PersonService
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
-import jakarta.annotation.PostConstruct
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Validator
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -27,46 +27,47 @@ class PersonServiceImpl implements PersonService {
     @Autowired
     MeterRegistry meterRegistry
 
-    // Counters for business operations
-    private Counter personCreateCounter
-    private Counter personUpdateCounter
-    private Counter personDeleteSuccessCounter
-    private Counter personDeleteFailureCounter
-    private Counter personReadCounter
-    private Counter validationErrorCounter
+    // Counters for business operations - injected from MetricsConfig
+    @Autowired
+    @Qualifier("personCreateCounter")
+    Counter personCreateCounter
 
-    // Timers for operation duration
-    private Timer saveTimer
-    private Timer deleteTimer
-    private Timer findByIdTimer
-    private Timer findAllTimer
+    @Autowired
+    @Qualifier("personUpdateCounter")
+    Counter personUpdateCounter
 
-    @PostConstruct
-    void initMetrics() {
-        // Operation counters with result tags
-        personCreateCounter = meterRegistry.counter("person.operations.total",
-                "operation", "create", "result", "success")
-        personUpdateCounter = meterRegistry.counter("person.operations.total",
-                "operation", "update", "result", "success")
-        personDeleteSuccessCounter = meterRegistry.counter("person.operations.total",
-                "operation", "delete", "result", "success")
-        personDeleteFailureCounter = meterRegistry.counter("person.operations.total",
-                "operation", "delete", "result", "failed")
-        personReadCounter = meterRegistry.counter("person.operations.total",
-                "operation", "read", "result", "success")
+    @Autowired
+    @Qualifier("personDeleteSuccessCounter")
+    Counter personDeleteSuccessCounter
 
-        // Validation error counter
-        validationErrorCounter = meterRegistry.counter("person.validation.errors.total")
+    @Autowired
+    @Qualifier("personDeleteFailureCounter")
+    Counter personDeleteFailureCounter
 
-        // Operation timers
-        saveTimer = meterRegistry.timer("person.operation.duration", "operation", "save")
-        deleteTimer = meterRegistry.timer("person.operation.duration", "operation", "delete")
-        findByIdTimer = meterRegistry.timer("person.operation.duration", "operation", "findById")
-        findAllTimer = meterRegistry.timer("person.operation.duration", "operation", "findAll")
+    @Autowired
+    @Qualifier("personReadCounter")
+    Counter personReadCounter
 
-        // Gauge for current person count
-        meterRegistry.gauge("person.repository.count", personRepository, repo -> repo.count().doubleValue())
-    }
+    @Autowired
+    @Qualifier("validationErrorCounter")
+    Counter validationErrorCounter
+
+    // Timers for operation duration - injected from MetricsConfig
+    @Autowired
+    @Qualifier("saveTimer")
+    Timer saveTimer
+
+    @Autowired
+    @Qualifier("deleteTimer")
+    Timer deleteTimer
+
+    @Autowired
+    @Qualifier("findByIdTimer")
+    Timer findByIdTimer
+
+    @Autowired
+    @Qualifier("findAllTimer")
+    Timer findAllTimer
 
     @Override
     List<Person> findAll() {

@@ -3,6 +3,9 @@ package io.github.joxebus.service.impl
 import io.github.joxebus.domain.Person
 import io.github.joxebus.repository.PersonRepository
 import io.github.joxebus.service.PersonService
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.Validator
@@ -13,12 +16,37 @@ class PersonServiceImplSpec extends Specification {
 
     PersonRepository personRepository = Mock()
     Validator validator = Mock()
+    MeterRegistry meterRegistry = Mock()
+    Counter mockCounter = Mock()
+    Timer mockTimer = Mock()
 
     @Subject
     PersonService personService = new PersonServiceImpl(
         personRepository: personRepository,
-        validator: validator
+        validator: validator,
+        meterRegistry: meterRegistry,
+        personCreateCounter: mockCounter,
+        personUpdateCounter: mockCounter,
+        personDeleteSuccessCounter: mockCounter,
+        personDeleteFailureCounter: mockCounter,
+        personReadCounter: mockCounter,
+        validationErrorCounter: mockCounter,
+        saveTimer: mockTimer,
+        deleteTimer: mockTimer,
+        findByIdTimer: mockTimer,
+        findAllTimer: mockTimer
     )
+
+    def setup() {
+        // Mock Timer.recordCallable to execute the closure and return result
+        mockTimer.recordCallable(_) >> { args ->
+            def callable = args[0]
+            return callable.call()
+        }
+        // Mock meterRegistry.counter() to return mockCounter for dynamic counters
+        // Use wildcard matcher to handle varargs with any number of parameters
+        meterRegistry.counter(*_) >> mockCounter
+    }
 
     def "should find all persons"() {
         given: "a list of persons in the repository"

@@ -105,11 +105,13 @@ mvn clean package -DskipTests
 mvn test
 ```
 
-**Test Coverage**: 34 Spock tests (100% passing)
-- 10 domain validation tests
-- 12 service layer tests
-- 11 controller tests
-- 11 integration tests
+**Test Coverage**: 56 Spock tests (100% passing)
+- 10 domain validation tests (common module)
+- 12 frontend controller tests (front module)
+- 34 backend tests (service module):
+  - 12 service layer tests
+  - 11 controller tests
+  - 11 integration tests
 
 ## 🐳 Running with Docker Compose
 
@@ -118,11 +120,13 @@ mvn test
 docker compose up -d --build
 ```
 
-This starts 9 containers:
+This starts 11 containers:
 - 3x Backend service instances (person-service-client)
 - 1x Frontend web app (person-front)
 - 1x MySQL 8.0
 - 1x Consul
+- 1x Prometheus
+- 1x Grafana
 - 1x Elasticsearch
 - 1x Logstash
 - 1x Kibana
@@ -165,6 +169,8 @@ docker compose down -v
 | **Backend API** | http://localhost:8082/people | REST API (service-2) |
 | **Backend API** | http://localhost:8083/people | REST API (service-3) |
 | **Consul UI** | http://localhost:8500/ui | Service registry dashboard |
+| **Prometheus** | http://localhost:9090 | Metrics collection and queries |
+| **Grafana** | http://localhost:3000 | Metrics visualization (admin/admin) |
 | **Kibana** | http://localhost:5601 | Log analytics dashboard |
 | **Elasticsearch** | http://localhost:9200 | Search engine API |
 | **H2 Console** | http://localhost:8081/console | H2 database console (local only) |
@@ -332,7 +338,54 @@ curl http://localhost:8081/actuator/health
 
 # Service info
 curl http://localhost:8081/actuator/info
+
+# Prometheus metrics
+curl http://localhost:8081/actuator/prometheus
 ```
+
+### Prometheus Metrics Collection
+
+**Prometheus** (http://localhost:9090) collects metrics from all service instances via Consul service discovery:
+
+```bash
+# View all available metrics
+curl http://localhost:8081/actuator/prometheus | grep person_
+
+# Query metrics in Prometheus
+curl 'http://localhost:9090/api/v1/query?query=person_operations_total'
+```
+
+**Custom Application Metrics** (defined in `MetricsConfig.groovy`):
+
+**Backend Service Metrics** (`spring-boot-service`):
+- `person.operations.total` - CRUD operations (create, read, update, delete, list)
+- `person.service.execution.time` - Service method execution times
+- `person.repository.total` - Repository count gauge
+- `person.api.requests.total` - REST API endpoint calls
+
+**Frontend Metrics** (`spring-boot-front`):
+- `person.frontend.requests.total` - Frontend operations (list, create, delete)
+- `person.frontend.backend.errors.total` - Backend communication failures
+- `person.frontend.page.render.time` - Page render performance
+
+**Architecture**: Metrics are defined as Spring beans in centralized `MetricsConfig` classes and injected via `@Autowired` + `@Qualifier`.
+
+### Grafana Dashboards
+
+**Grafana** (http://localhost:3000) provides real-time visualization:
+
+- **Default credentials**: admin / admin
+- **Pre-configured datasource**: Prometheus (auto-connected)
+- **Pre-loaded dashboards**: 
+  - Business metrics (person operations, API usage)
+  - JVM metrics (heap, threads, GC)
+  - System metrics (CPU, memory)
+
+**Create custom dashboard**:
+1. Open http://localhost:3000
+2. Navigate to Dashboards → New Dashboard
+3. Add Panel → Select Prometheus datasource
+4. Use PromQL queries: `rate(person_operations_total[5m])`
 
 ### Consul Health Dashboard
 

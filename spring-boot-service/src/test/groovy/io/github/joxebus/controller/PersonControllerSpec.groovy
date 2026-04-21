@@ -2,6 +2,9 @@ package io.github.joxebus.controller
 
 import io.github.joxebus.domain.Person
 import io.github.joxebus.service.PersonService
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
@@ -10,9 +13,36 @@ import spock.lang.Subject
 class PersonControllerSpec extends Specification {
 
     PersonService personService = Mock()
+    MeterRegistry meterRegistry = Mock()
+    Counter mockCounter = Mock()
+    Timer mockTimer = Mock()
 
     @Subject
-    PersonController personController = new PersonController(personService: personService)
+    PersonController personController = new PersonController(
+        personService: personService,
+        meterRegistry: meterRegistry,
+        apiListRequestCounter: mockCounter,
+        apiGetRequestCounter: mockCounter,
+        apiCreateRequestCounter: mockCounter,
+        apiUpdateRequestCounter: mockCounter,
+        apiDeleteRequestCounter: mockCounter,
+        apiListTimer: mockTimer,
+        apiGetTimer: mockTimer,
+        apiCreateTimer: mockTimer,
+        apiUpdateTimer: mockTimer,
+        apiDeleteTimer: mockTimer
+    )
+
+    def setup() {
+        // Mock Timer.recordCallable to execute the closure and return result
+        mockTimer.recordCallable(_) >> { args ->
+            def callable = args[0]
+            return callable.call()
+        }
+        // Mock meterRegistry.counter() to return mockCounter for dynamic counters
+        // Use wildcard matcher to handle varargs with any number of parameters
+        meterRegistry.counter(*_) >> mockCounter
+    }
 
     def "should get list of all persons"() {
         given: "service returns list of persons"
@@ -117,8 +147,8 @@ class PersonControllerSpec extends Specification {
     }
 
     def "should return bad request on delete error"() {
-        given: "service throws error on delete"
-        personService.delete(1L) >> { throw new Error("Test error") }
+        given: "service throws exception on delete"
+        personService.delete(1L) >> { throw new RuntimeException("Test error") }
 
         when: "calling restDeletePerson"
         ResponseEntity<?> result = personController.restDeletePerson(1L)

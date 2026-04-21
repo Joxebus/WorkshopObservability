@@ -1,0 +1,100 @@
+# Prometheus Configuration for Person Service Microservices
+# This configuration uses Consul for service discovery to automatically
+# discover and scrape metrics from all service instances
+
+global:
+  scrape_interval: 15s        # Scrape metrics every 15 seconds
+  evaluation_interval: 15s     # Evaluate rules every 15 seconds
+  external_labels:
+    cluster: 'docker-local'
+    environment: 'development'
+
+# Alerting configuration (optional, can be extended later)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # Example: ['alertmanager:9093']
+
+# Scrape configuration
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Backend services (person-service-client) via Consul service discovery
+  - job_name: 'person-service'
+    consul_sd_configs:
+      - server: 'consul:8500'
+        services: ['person-service-client']
+
+    # Prometheus metrics path
+    metrics_path: '/actuator/prometheus'
+
+    # Relabeling to use service metadata
+    relabel_configs:
+      # Use service name as job label
+      - source_labels: [__meta_consul_service]
+        target_label: job
+
+      # Use service ID as instance label
+      - source_labels: [__meta_consul_service_id]
+        target_label: instance
+
+      # Add service address
+      - source_labels: [__meta_consul_service_address]
+        target_label: service_address
+
+      # Add service port
+      - source_labels: [__meta_consul_service_port]
+        target_label: service_port
+
+      # Construct the scrape address
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ':'
+        target_label: __address__
+
+  # Frontend service (person-front) via Consul service discovery
+  - job_name: 'person-front'
+    consul_sd_configs:
+      - server: 'consul:8500'
+        services: ['person-front']
+
+    metrics_path: '/actuator/prometheus'
+
+    relabel_configs:
+      - source_labels: [__meta_consul_service]
+        target_label: job
+
+      - source_labels: [__meta_consul_service_id]
+        target_label: instance
+
+      - source_labels: [__meta_consul_service_address]
+        target_label: service_address
+
+      - source_labels: [__meta_consul_service_port]
+        target_label: service_port
+
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ':'
+        target_label: __address__
+
+  # Consul itself (optional - for monitoring Consul health)
+  - job_name: 'consul'
+    static_configs:
+      - targets: ['consul:8500']
+    metrics_path: '/v1/agent/metrics'
+    params:
+      format: ['prometheus']
+
+  # MySQL exporter (if added later)
+  # - job_name: 'mysql'
+  #   static_configs:
+  #     - targets: ['mysql-exporter:9104']
+
+  # Elasticsearch (optional - for monitoring ES cluster)
+  # - job_name: 'elasticsearch'
+  #   static_configs:
+  #     - targets: ['elasticsearch:9200']
+  #   metrics_path: '/_prometheus/metrics'

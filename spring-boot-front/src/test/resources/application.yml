@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: person-front-test
+  cloud:
+    consul:
+      enabled: false
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+
+server:
+  port: 0
+
+logging:
+  level:
+    root: WARN
+    io.github.joxebus: INFO

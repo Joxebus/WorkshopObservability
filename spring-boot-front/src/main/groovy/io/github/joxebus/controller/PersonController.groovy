@@ -3,10 +3,9 @@ package io.github.joxebus.controller
 import io.github.joxebus.domain.Person
 import groovy.util.logging.Slf4j
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
-import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -29,56 +28,52 @@ class PersonController {
     @Autowired
     RestTemplate restTemplate
 
+    // Frontend operation counters - injected from MetricsConfig
     @Autowired
-    MeterRegistry meterRegistry
+    @Qualifier("frontendListSuccessCounter")
+    Counter frontendListSuccessCounter
 
-    // Frontend operation counters
-    private Counter frontendListSuccessCounter
-    private Counter frontendListErrorCounter
-    private Counter frontendCreateSuccessCounter
-    private Counter frontendCreateErrorCounter
-    private Counter frontendDeleteSuccessCounter
-    private Counter frontendDeleteErrorCounter
+    @Autowired
+    @Qualifier("frontendListErrorCounter")
+    Counter frontendListErrorCounter
 
-    // Backend communication error counters
-    private Counter backendListErrorCounter
-    private Counter backendCreateErrorCounter
-    private Counter backendDeleteErrorCounter
+    @Autowired
+    @Qualifier("frontendCreateSuccessCounter")
+    Counter frontendCreateSuccessCounter
 
-    // Page render timers
-    private Timer listPageRenderTimer
-    private Timer createPageRenderTimer
+    @Autowired
+    @Qualifier("frontendCreateErrorCounter")
+    Counter frontendCreateErrorCounter
 
-    @PostConstruct
-    void initMetrics() {
-        // Frontend operation counters
-        frontendListSuccessCounter = meterRegistry.counter("person.frontend.requests.total",
-                "operation", "list", "result", "success")
-        frontendListErrorCounter = meterRegistry.counter("person.frontend.requests.total",
-                "operation", "list", "result", "error")
-        frontendCreateSuccessCounter = meterRegistry.counter("person.frontend.requests.total",
-                "operation", "create", "result", "success")
-        frontendCreateErrorCounter = meterRegistry.counter("person.frontend.requests.total",
-                "operation", "create", "result", "error")
-        frontendDeleteSuccessCounter = meterRegistry.counter("person.frontend.requests.total",
-                "operation", "delete", "result", "success")
-        frontendDeleteErrorCounter = meterRegistry.counter("person.frontend.requests.total",
-                "operation", "delete", "result", "error")
+    @Autowired
+    @Qualifier("frontendDeleteSuccessCounter")
+    Counter frontendDeleteSuccessCounter
 
-        // Backend communication errors
-        backendListErrorCounter = meterRegistry.counter("person.frontend.backend.errors.total",
-                "operation", "list")
-        backendCreateErrorCounter = meterRegistry.counter("person.frontend.backend.errors.total",
-                "operation", "create")
-        backendDeleteErrorCounter = meterRegistry.counter("person.frontend.backend.errors.total",
-                "operation", "delete")
+    @Autowired
+    @Qualifier("frontendDeleteErrorCounter")
+    Counter frontendDeleteErrorCounter
 
-        // Page render timers
-        listPageRenderTimer = meterRegistry.timer("person.frontend.page.render.time",
-                "page", "list")
-        createPageRenderTimer = meterRegistry.timer("person.frontend.page.render.time",
-                "page", "create")
-    }
+    // Backend communication error counters - injected from MetricsConfig
+    @Autowired
+    @Qualifier("backendListErrorCounter")
+    Counter backendListErrorCounter
+
+    @Autowired
+    @Qualifier("backendCreateErrorCounter")
+    Counter backendCreateErrorCounter
+
+    @Autowired
+    @Qualifier("backendDeleteErrorCounter")
+    Counter backendDeleteErrorCounter
+
+    // Page render timers - injected from MetricsConfig
+    @Autowired
+    @Qualifier("listPageRenderTimer")
+    Timer listPageRenderTimer
+
+    @Autowired
+    @Qualifier("createPageRenderTimer")
+    Timer createPageRenderTimer
 
     /**
      * Returns a model and view to display the information
@@ -122,7 +117,7 @@ class PersonController {
                 if(response.statusCode == HttpStatus.OK){
                     frontendCreateSuccessCounter.increment()
                     redirAttrs.addFlashAttribute("message", "Successfuly added ${response.body.name}")
-                    return 'redirect:/people/'
+                    return 'redirect:/people'
                 } else{
                     frontendCreateErrorCounter.increment()
                     model.addAttribute("person", response.body)
@@ -151,7 +146,7 @@ class PersonController {
             backendDeleteErrorCounter.increment()
             redirAttrs.addFlashAttribute("error", "Verify your information")
         }
-        return 'redirect:/people/'
+        return 'redirect:/people'
     }
 
 }

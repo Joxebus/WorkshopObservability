@@ -6,8 +6,8 @@ import groovy.util.logging.Slf4j
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
-import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -24,46 +24,47 @@ class PersonController {
     @Autowired
     MeterRegistry meterRegistry
 
-    // API request counters
-    private Counter apiListRequestCounter
-    private Counter apiGetRequestCounter
-    private Counter apiCreateRequestCounter
-    private Counter apiUpdateRequestCounter
-    private Counter apiDeleteRequestCounter
+    // API request counters - injected from MetricsConfig
+    @Autowired
+    @Qualifier("apiListRequestCounter")
+    Counter apiListRequestCounter
 
-    // API response timers
-    private Timer apiListTimer
-    private Timer apiGetTimer
-    private Timer apiCreateTimer
-    private Timer apiUpdateTimer
-    private Timer apiDeleteTimer
+    @Autowired
+    @Qualifier("apiGetRequestCounter")
+    Counter apiGetRequestCounter
 
-    @PostConstruct
-    void initMetrics() {
-        // Request counters by endpoint and method
-        apiListRequestCounter = meterRegistry.counter("person.api.requests.total",
-                "endpoint", "/people", "method", "GET")
-        apiGetRequestCounter = meterRegistry.counter("person.api.requests.total",
-                "endpoint", "/people/{id}", "method", "GET")
-        apiCreateRequestCounter = meterRegistry.counter("person.api.requests.total",
-                "endpoint", "/people", "method", "POST")
-        apiUpdateRequestCounter = meterRegistry.counter("person.api.requests.total",
-                "endpoint", "/people", "method", "PUT")
-        apiDeleteRequestCounter = meterRegistry.counter("person.api.requests.total",
-                "endpoint", "/people/{id}", "method", "DELETE")
+    @Autowired
+    @Qualifier("apiCreateRequestCounter")
+    Counter apiCreateRequestCounter
 
-        // Response time timers
-        apiListTimer = meterRegistry.timer("person.api.response.time",
-                "endpoint", "/people", "method", "GET")
-        apiGetTimer = meterRegistry.timer("person.api.response.time",
-                "endpoint", "/people/{id}", "method", "GET")
-        apiCreateTimer = meterRegistry.timer("person.api.response.time",
-                "endpoint", "/people", "method", "POST")
-        apiUpdateTimer = meterRegistry.timer("person.api.response.time",
-                "endpoint", "/people", "method", "PUT")
-        apiDeleteTimer = meterRegistry.timer("person.api.response.time",
-                "endpoint", "/people/{id}", "method", "DELETE")
-    }
+    @Autowired
+    @Qualifier("apiUpdateRequestCounter")
+    Counter apiUpdateRequestCounter
+
+    @Autowired
+    @Qualifier("apiDeleteRequestCounter")
+    Counter apiDeleteRequestCounter
+
+    // API response timers - injected from MetricsConfig
+    @Autowired
+    @Qualifier("apiListTimer")
+    Timer apiListTimer
+
+    @Autowired
+    @Qualifier("apiGetTimer")
+    Timer apiGetTimer
+
+    @Autowired
+    @Qualifier("apiCreateTimer")
+    Timer apiCreateTimer
+
+    @Autowired
+    @Qualifier("apiUpdateTimer")
+    Timer apiUpdateTimer
+
+    @Autowired
+    @Qualifier("apiDeleteTimer")
+    Timer apiDeleteTimer
 
     @CrossOrigin(origins = "http://localhost:8080")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
