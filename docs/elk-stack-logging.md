@@ -640,6 +640,12 @@ log.info("Person created",
 
 ### MDC (Mapped Diagnostic Context)
 
+**Key Aspects of MDC:**
+- Thread-Local Storage: MDC uses a map-based structure to store key-value pairs that are local to the current thread, ensuring thread safety.
+- Enhanced Traceability: It allows developers to trace a single request's journey across complex, asynchronous, or multi-threaded applications.
+- Automatic Injection: Once configured, MDC automatically includes this contextual data in every log entry, making it easy to filter logs by specific users or transactions.
+- Example Usage: MDC.put("requestId", "12345"); before a process and MDC.clear();
+
 Add request-scoped context:
 
 ```groovy

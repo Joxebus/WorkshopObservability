@@ -21,6 +21,7 @@ class RequestLoggingFilter extends OncePerRequestFilter {
             FilterChain filterChain) {
 
         try {
+            // Mapped Diagnostic Context
             // Add request ID to all logs for this request
             MDC.put("request_id", UUID.randomUUID().toString())
             MDC.put("user_ip", request.getRemoteAddr())
