@@ -25,10 +25,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
   endpoint:
     health:
       show-details: when-authorized
+  metrics:
+    tags:
+      application: person-front
+      instance: ${SERVER_PORT:8080}
 
 server:
   port: ${SERVER_PORT:8080}

@@ -42,6 +42,10 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  metrics:
+    tags:
+      application: person-service
+      instance: ${SERVER_PORT:8081}
 
 server:
   port: ${SERVER_PORT:8081}
