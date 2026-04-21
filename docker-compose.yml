@@ -76,7 +76,7 @@ services:
       - "8600:53/udp"
     command: "agent -server -bootstrap -ui -client=0.0.0.0 -bind='{{ GetInterfaceIP \"eth0\" }}'"
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0
     platform: linux/amd64
     container_name: mysql
     restart: always
@@ -87,20 +87,30 @@ services:
       - MYSQL_PASSWORD=example
     ports:
       - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
   front-1:
     build: ./spring-boot-front
     container_name: front
     environment:
       - SERVER_PORT=8080
       - SERVICE_ALIAS=front
+      - SPRING_CLOUD_CONSUL_DISCOVERY_HOSTNAME=front
+    hostname: front
     ports:
       - "8080:8080"
     links:
       - consul
       - logstash
     depends_on:
-      - consul
-      - logstash
+      consul:
+        condition: service_started
+      logstash:
+        condition: service_started
   service-1:
     build: ./spring-boot-service
     container_name: service-1
@@ -108,6 +118,7 @@ services:
       - SERVER_PORT=8081
       - SERVICE_ALIAS=service-1
       - SPRING_CLOUD_CONSUL_DISCOVERY_HOSTNAME=service-1
+    hostname: service-1
     ports:
       - "8081:8081"
     links:
@@ -115,9 +126,12 @@ services:
       - mysql
       - logstash
     depends_on:
-      - mysql
-      - consul
-      - logstash
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      logstash:
+        condition: service_started
   service-2:
     build: ./spring-boot-service
     container_name: service-2
@@ -125,6 +139,7 @@ services:
       - SERVER_PORT=8082
       - SERVICE_ALIAS=service-2
       - SPRING_CLOUD_CONSUL_DISCOVERY_HOSTNAME=service-2
+    hostname: service-2
     ports:
       - "8082:8082"
     links:
@@ -132,7 +147,8 @@ services:
       - mysql
       - logstash
     depends_on:
-      - service-1
+      service-1:
+        condition: service_started
   service-3:
     build: ./spring-boot-service
     container_name: service-3
@@ -141,6 +157,7 @@ services:
       - SERVER_PORT=8083
       - SERVICE_ALIAS=service-3
       - SPRING_CLOUD_CONSUL_DISCOVERY_HOSTNAME=service-3
+    hostname: service-3
     ports:
       - "8083:8083"
     links:
@@ -148,7 +165,8 @@ services:
       - mysql
       - logstash
     depends_on:
-      - service-2
+      service-2:
+        condition: service_started
 
 volumes:
   elasticsearch_data:

@@ -151,4 +151,22 @@ class PersonServiceImplSpec extends Specification {
         result != null
         result.isEmpty()
     }
+
+    def "should return count of persons"() {
+        when: "calling count"
+        long result = personService.count()
+
+        then: "count is returned from repository"
+        1 * personRepository.count() >> 5L
+        result == 5L
+    }
+
+    def "should return zero when no persons exist"() {
+        when: "calling count with empty repository"
+        long result = personService.count()
+
+        then: "zero is returned"
+        1 * personRepository.count() >> 0L
+        result == 0L
+    }
 }

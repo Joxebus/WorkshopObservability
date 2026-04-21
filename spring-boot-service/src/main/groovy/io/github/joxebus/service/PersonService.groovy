@@ -9,4 +9,5 @@ interface PersonService {
     boolean delete(Long id)
     Person findById(Long id)
     List<Person> findAll()
+    long count()
 }

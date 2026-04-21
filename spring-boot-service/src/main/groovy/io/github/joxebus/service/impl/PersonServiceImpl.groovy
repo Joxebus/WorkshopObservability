@@ -48,4 +48,9 @@ class PersonServiceImpl implements PersonService {
             return false
         }
     }
+
+    @Override
+    long count() {
+        personRepository.count()
+    }
 }

@@ -1,7 +1,6 @@
 package io.github.joxebus.config
 
 import io.github.joxebus.domain.Person
-import io.github.joxebus.repository.PersonRepository
 import io.github.joxebus.service.PersonService
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,7 +9,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.event.EventListener
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 
 /**
  * This class has been created to load information
@@ -26,16 +24,12 @@ class Bootstrap {
     PersonService personService
 
     @Autowired
-    PersonRepository personRepository
-
-    @Autowired
     ApplicationContext ctx
 
     @EventListener
-    @Transactional
     def init(ApplicationReadyEvent ready) {
 
-        if (personRepository.count() == 0) {
+        if (personService.count() == 0) {
             log.info "--------- INIT Loading information ---------"
             def persons = [
                     new Person(name: "Omar", lastname: "Bautista", email: 'obautista@email.com'),
