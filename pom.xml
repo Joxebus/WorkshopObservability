@@ -12,18 +12,26 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.11.RELEASE</version>
+        <version>3.2.3</version>
+        <relativePath/>
     </parent>
 
     <properties>
-        <java.version>1.8</java.version>
-        <gorm.version>6.1.9.RELEASE</gorm.version>
-        <hibernate.version>5.1.0.Final</hibernate.version>
-        <tomcat-jdbc.version>8.5.0</tomcat-jdbc.version>
-        <bootstrap-webjars.version>4.1.3</bootstrap-webjars.version>
-        <spring-boot.version>1.5.11.RELEASE</spring-boot.version>
-        <logstash.version>4.9</logstash.version>
+        <java.version>17</java.version>
+        <groovy.version>4.0.16</groovy.version>
+        <gorm.version>8.1.2</gorm.version>
+        <hibernate.version>6.4.1.Final</hibernate.version>
+        <bootstrap-webjars.version>5.3.2</bootstrap-webjars.version>
+        <spring-boot.version>3.2.3</spring-boot.version>
+        <spring-cloud.version>2023.0.0</spring-cloud.version>
+        <logstash.version>7.4</logstash.version>
+        <spock.version>2.4-M4-groovy-4.0</spock.version>
+        <gmavenplus.version>3.0.2</gmavenplus.version>
+        <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
         <src.dir>src/main/groovy</src.dir>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <modules>
@@ -33,20 +41,33 @@
     </modules>
 
     <dependencies>
-
-
+        <!-- Groovy 4.0.16 -->
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>${groovy.version}</version>
         </dependency>
 
-        <!-- GORM dependencies -->
         <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>gorm-hibernate5-spring-boot</artifactId>
-            <version>${gorm.version}</version>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-sql</artifactId>
+            <version>${groovy.version}</version>
         </dependency>
 
+        <!-- Jakarta Persistence API -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta.persistence.version}</version>
+        </dependency>
+
+        <!-- Jakarta Validation API -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
+        <!-- Logstash Logback Encoder -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
@@ -54,13 +75,27 @@
         </dependency>
     </dependencies>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Cloud BOM -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 
     <build>
         <plugins>
+            <!-- GMavenPlus Plugin 3.0.2 for Groovy 4 -->
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.5</version>
+                <version>${gmavenplus.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -68,13 +103,37 @@
                             <goal>addTestSources</goal>
                             <goal>generateStubs</goal>
                             <goal>compile</goal>
-                            <goal>testGenerateStubs</goal>
-                            <goal>testCompile</goal>
+                            <goal>generateTestStubs</goal>
+                            <goal>compileTests</goal>
                             <goal>removeStubs</goal>
                             <goal>removeTestStubs</goal>
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <targetBytecode>17</targetBytecode>
+                    <parameters>true</parameters>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.groovy</groupId>
+                        <artifactId>groovy</artifactId>
+                        <version>${groovy.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <release>17</release>
+                </configuration>
             </plugin>
         </plugins>
     </build>
