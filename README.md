@@ -522,25 +522,25 @@ docker compose logs mysql
 
 ## 📖 Documentation
 
-**Quick Links**: [Documentation Index](docs/INDEX.md) | [Acronyms Glossary](docs/INDEX.md#acronyms--terminology)
+**Quick Links**: [Documentation Index](dev-docs/INDEX.md) | [Acronyms Glossary](dev-docs/INDEX.md#acronyms--terminology)
 
 ### Complete Guides
 
 | Guide | Description | Lines | Status |
 |-------|-------------|-------|--------|
-| **[Documentation Index](docs/INDEX.md)** | Central hub with file descriptions and acronyms glossary | 539 | ✅ |
-| **[Docker Commands](docs/docker-commands.md)** | Complete Docker & Docker Compose reference | 600 | ✅ |
-| **[Consul Service Discovery](docs/consul-service-discovery.md)** | Service registry, health checks, load balancing | 1,490 | ✅ |
-| **[ELK Stack Logging](docs/elk-stack-logging.md)** | Centralized logging with Elasticsearch, Logstash, Kibana | 2,040 | ✅ |
-| **[Metrics & Monitoring](docs/metrics-monitoring.md)** | Application metrics, dashboards, alerting | 1,900 | ✅ |
+| **[Documentation Index](dev-docs/INDEX.md)** | Central hub with file descriptions and acronyms glossary | 539 | ✅ |
+| **[Docker Commands](dev-docs/docker-commands.md)** | Complete Docker & Docker Compose reference | 600 | ✅ |
+| **[Consul Service Discovery](dev-docs/consul-service-discovery.md)** | Service registry, health checks, load balancing | 1,490 | ✅ |
+| **[ELK Stack Logging](dev-docs/elk-stack-logging.md)** | Centralized logging with Elasticsearch, Logstash, Kibana | 2,040 | ✅ |
+| **[Metrics & Monitoring](dev-docs/metrics-monitoring.md)** | Application metrics, dashboards, alerting | 1,900 | ✅ |
 
 ### Quick Start by Role
 
-**New Developers**: Start with [Docker Commands](docs/docker-commands.md) → [Consul Guide](docs/consul-service-discovery.md) → [ELK Logging](docs/elk-stack-logging.md)
+**New Developers**: Start with [Docker Commands](dev-docs/docker-commands.md) → [Consul Guide](dev-docs/consul-service-discovery.md) → [ELK Logging](dev-docs/elk-stack-logging.md)
 
-**Operations/DevOps**: Start with [Docker Commands](docs/docker-commands.md) → [Metrics & Monitoring](docs/metrics-monitoring.md) → [ELK Logging](docs/elk-stack-logging.md)
+**Operations/DevOps**: Start with [Docker Commands](dev-docs/docker-commands.md) → [Metrics & Monitoring](dev-docs/metrics-monitoring.md) → [ELK Logging](dev-docs/elk-stack-logging.md)
 
-**Troubleshooting**: Check [Documentation Index](docs/INDEX.md#quick-start) for issue-specific guide recommendations
+**Troubleshooting**: Check [Documentation Index](dev-docs/INDEX.md#quick-start) for issue-specific guide recommendations
 
 ## 🤝 Contributing
 
