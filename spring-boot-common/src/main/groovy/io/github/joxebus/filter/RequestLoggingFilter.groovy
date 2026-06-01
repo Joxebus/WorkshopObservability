@@ -51,6 +51,11 @@ class RequestLoggingFilter extends OncePerRequestFilter {
             FilterChain filterChain) {
 
         try {
+            if(request.getRequestURI().startsWith("/actuator/")) {
+                // Skip MDC setup for health checks to reduce log noise
+                filterChain.doFilter(request, response)
+                return
+            }
             // Use Elvis operator to either use propagated headers or generate/extract new values
             String requestId = request.getHeader(HEADER_REQUEST_ID) ?: UUID.randomUUID().toString()
 
@@ -61,7 +66,7 @@ class RequestLoggingFilter extends OncePerRequestFilter {
 
             // Single log statement using GString for conditional message
             String source = request.getHeader(HEADER_REQUEST_ID) ? "upstream service" : "direct request"
-            log.debug("${request.getHeader(HEADER_REQUEST_ID) ? 'Received propagated' : 'Generated new'} request_id: ${requestId} ${request.getHeader(HEADER_REQUEST_ID) ? 'from' : 'for'} ${source}")
+            log.trace("${request.getHeader(HEADER_REQUEST_ID) ? 'Received propagated' : 'Generated new'} request_id: ${requestId} ${request.getHeader(HEADER_REQUEST_ID) ? 'from' : 'for'} ${source}")
 
             // Continue filter chain
             filterChain.doFilter(request, response)
