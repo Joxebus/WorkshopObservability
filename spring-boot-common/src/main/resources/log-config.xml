@@ -27,31 +27,20 @@
     <logger name="org.springframework">
         <level value="WARN"/>
     </logger>
-    <logger name="org.grails">
-        <level value="WARN" />
-    </logger>
-    <logger name="com.netflix">
-        <level value="WARN" />
-    </logger>
-    <logger name="org.hibernate">
-        <level value="info" />
-    </logger>
     <logger name="org.hibernate">
         <level value="WARN"/>
     </logger>
     <logger name="org.apache">
         <level value="WARN"/>
     </logger>
-
     <logger name="com.zaxxer.hikari">
         <level value="WARN"/>
     </logger>
-
-    <logger name="io.github.joxebus">
-        <level value="debug"/>
+    <logger name="reactor.util.Loggers">
+        <level value="WARN"/>
     </logger>
-    <logger name="io.github.joxebus.challenge.config">
-        <level value="info"/>
+    <logger name="io.github.joxebus">
+        <level value="INFO"/>
     </logger>
 
     <root level="debug">
