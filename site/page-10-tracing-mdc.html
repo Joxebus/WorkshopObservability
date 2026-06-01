@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distributed Tracing with MDC - Observability Workshop</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="index.html" class="header-logo"><span>🔍</span><span>Observability Workshop</span></a>
+        <div class="header-actions">
+          <div class="progress-indicator">
+            <span id="progress-text">Page 10 of 15</span>
+            <div class="progress-bar"><div id="progress-bar-fill" class="progress-bar-fill" style="width: 66.67%"></div></div>
+          </div>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <svg class="icon-sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/></svg>
+            <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7ZM4 12C4 16.4183 7.58172 20 12 20C15.0583 20 17.7158 18.2839 19.062 15.7621C18.3945 15.9187 17.7035 16 17 16C12.0294 16 8 11.9706 8 7C8 6.29648 8.08133 5.60547 8.2379 4.938C5.71611 6.28423 4 8.9417 4 12Z"/></svg>
+          </button>
+          <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation"><span class="nav-toggle-line"></span><span class="nav-toggle-line"></span><span class="nav-toggle-line"></span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <nav id="nav-menu" class="nav-menu">
+    <div class="nav-menu-content">
+      <h3 class="nav-menu-title">Workshop Sections</h3>
+      <ul class="nav-menu-list">
+        <li><a href="index.html" class="nav-menu-link">Home</a></li>
+        <li><a href="page-01-title.html" class="nav-menu-link">1. Introduction</a></li>
+        <li><a href="page-02-monitoring-gap.html" class="nav-menu-link">2. The Monitoring Gap</a></li>
+        <li><a href="page-03-three-pillars.html" class="nav-menu-link">3. The Three Pillars</a></li>
+        <li><a href="page-04-stack.html" class="nav-menu-link">4. Our Observability Stack</a></li>
+        <li><a href="page-05-logs-elk.html" class="nav-menu-link">5. Logs with ELK Stack</a></li>
+        <li><a href="page-06-elk-action.html" class="nav-menu-link">6. ELK in Action</a></li>
+        <li><a href="page-07-metrics.html" class="nav-menu-link">7. Metrics with Prometheus</a></li>
+        <li><a href="page-08-custom-metrics.html" class="nav-menu-link">8. Custom Metrics</a></li>
+        <li><a href="page-09-grafana.html" class="nav-menu-link">9. Grafana Visualization</a></li>
+        <li><a href="page-10-tracing-mdc.html" class="nav-menu-link active">10. Distributed Tracing</a></li>
+        <li><a href="page-11-consul.html" class="nav-menu-link">11. Service Discovery</a></li>
+        <li><a href="page-12-complete-flow.html" class="nav-menu-link">12. The Complete Flow</a></li>
+        <li><a href="page-13-debugging.html" class="nav-menu-link">13. Real-World Debugging</a></li>
+        <li><a href="page-14-best-practices.html" class="nav-menu-link">14. Best Practices</a></li>
+        <li><a href="page-15-resources.html" class="nav-menu-link">15. Getting Started</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div id="nav-overlay" class="nav-overlay"></div>
+  <main id="main-content">
+    <div class="container">
+      <h1>Pillar 3: Distributed Tracing - Connect the Dots</h1>
+      <p class="description">MDC (Mapped Diagnostic Context) propagates contextual information across service boundaries.</p>
+      <section class="content-section">
+        <img src="img/slide-10-mdc-sequence_1_light.jpg" data-image-base="slide-10-mdc-sequence_1" alt="MDC Sequence Diagram" class="diagram-image">
+        <img src="img/slide-10-mdc-sequence_2_light.jpg" data-image-base="slide-10-mdc-sequence_2" alt="MDC Propagation Flow" class="diagram-image">
+      </section>
+      <section class="content-section">
+        <h2>What is MDC?</h2>
+        <ul>
+          <li><strong>Thread-local storage</strong>: Context stored per thread</li>
+          <li><strong>Automatically included</strong>: Every log statement includes MDC values</li>
+          <li><strong>Propagated across services</strong>: Sent via HTTP headers</li>
+        </ul>
+      </section>
+      <section class="content-section">
+        <h2>Our Implementation</h2>
+        <ul>
+          <li><strong>RequestLoggingFilter</strong>: Sets MDC values (request_id, user_ip, http_method, request_uri)</li>
+          <li><strong>MdcPropagationInterceptor</strong>: Adds MDC as HTTP headers</li>
+          <li><strong>Backend receives</strong>: Uses propagated values from headers</li>
+        </ul>
+      </section>
+      <section class="content-section">
+        <h2>HTTP Headers Used</h2>
+        <ul>
+          <li><code>X-Request-ID</code>: Unique request identifier</li>
+          <li><code>X-Person-User-IP</code>: Client IP address</li>
+          <li><code>X-Person-HTTP-Method</code>: HTTP method (GET, POST, etc.)</li>
+          <li><code>X-Person-Request-URI</code>: Request path</li>
+        </ul>
+      </section>
+      <section class="key-takeaways">
+        <h3>Key Takeaways</h3>
+        <ul>
+          <li>MDC provides thread-local context storage</li>
+          <li>HTTP headers propagate context between services</li>
+          <li>Automatic inclusion in all log statements</li>
+          <li>Foundation for distributed tracing</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+  <footer class="footer-nav">
+    <div class="container">
+      <div class="footer-nav-content">
+        <a href="page-09-grafana.html" class="footer-nav-button"><div><div class="footer-nav-label">Previous</div><div class="footer-nav-title">← Grafana Visualization</div></div></a>
+        <a href="page-11-consul.html" class="footer-nav-button primary"><div><div class="footer-nav-label">Next</div><div class="footer-nav-title">Service Discovery →</div></div></a>
+      </div>
+    </div>
+  </footer>
+  <script src="scripts/theme-toggle.js"></script>
+  <script src="scripts/navigation.js"></script>
+  <script src="scripts/progress.js"></script>
+</body>
+</html>

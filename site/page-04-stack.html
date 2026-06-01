@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-World Implementation: The Complete Stack">
+  <title>Our Observability Stack - Observability Workshop</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Preload Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <a href="index.html" class="header-logo">
+          <span>🔍</span>
+          <span>Observability Workshop</span>
+        </a>
+
+        <div class="header-actions">
+          <div class="progress-indicator">
+            <span id="progress-text" class="progress-text">Page 4 of 15</span>
+            <div class="progress-bar">
+              <div id="progress-bar-fill" class="progress-bar-fill" style="width: 26.67%"></div>
+            </div>
+          </div>
+
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+            <svg class="icon-sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>
+            </svg>
+            <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7ZM4 12C4 16.4183 7.58172 20 12 20C15.0583 20 17.7158 18.2839 19.062 15.7621C18.3945 15.9187 17.7035 16 17 16C12.0294 16 8 11.9706 8 7C8 6.29648 8.08133 5.60547 8.2379 4.938C5.71611 6.28423 4 8.9417 4 12Z"/>
+            </svg>
+          </button>
+
+          <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Menu -->
+  <nav id="nav-menu" class="nav-menu">
+    <div class="nav-menu-content">
+      <h3 class="nav-menu-title">Workshop Sections</h3>
+      <ul class="nav-menu-list">
+        <li class="nav-menu-item"><a href="index.html" class="nav-menu-link">Home</a></li>
+        <li class="nav-menu-item"><a href="page-01-title.html" class="nav-menu-link">1. Introduction</a></li>
+        <li class="nav-menu-item"><a href="page-02-monitoring-gap.html" class="nav-menu-link">2. The Monitoring Gap</a></li>
+        <li class="nav-menu-item"><a href="page-03-three-pillars.html" class="nav-menu-link">3. The Three Pillars</a></li>
+        <li class="nav-menu-item"><a href="page-04-stack.html" class="nav-menu-link active">4. Our Observability Stack</a></li>
+        <li class="nav-menu-item"><a href="page-05-logs-elk.html" class="nav-menu-link">5. Logs with ELK Stack</a></li>
+        <li class="nav-menu-item"><a href="page-06-elk-action.html" class="nav-menu-link">6. ELK in Action</a></li>
+        <li class="nav-menu-item"><a href="page-07-metrics.html" class="nav-menu-link">7. Metrics with Prometheus</a></li>
+        <li class="nav-menu-item"><a href="page-08-custom-metrics.html" class="nav-menu-link">8. Custom Metrics</a></li>
+        <li class="nav-menu-item"><a href="page-09-grafana.html" class="nav-menu-link">9. Grafana Visualization</a></li>
+        <li class="nav-menu-item"><a href="page-10-tracing-mdc.html" class="nav-menu-link">10. Distributed Tracing</a></li>
+        <li class="nav-menu-item"><a href="page-11-consul.html" class="nav-menu-link">11. Service Discovery</a></li>
+        <li class="nav-menu-item"><a href="page-12-complete-flow.html" class="nav-menu-link">12. The Complete Flow</a></li>
+        <li class="nav-menu-item"><a href="page-13-debugging.html" class="nav-menu-link">13. Real-World Debugging</a></li>
+        <li class="nav-menu-item"><a href="page-14-best-practices.html" class="nav-menu-link">14. Best Practices</a></li>
+        <li class="nav-menu-item"><a href="page-15-resources.html" class="nav-menu-link">15. Getting Started</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Navigation Overlay -->
+  <div id="nav-overlay" class="nav-overlay"></div>
+
+  <!-- Main Content -->
+  <main id="main-content">
+    <div class="container">
+
+      <h1>Real-World Implementation: The Complete Stack</h1>
+      <p class="description">
+        11 Docker containers working together to provide full observability.
+      </p>
+
+      <!-- Diagram -->
+      <div class="diagram-container">
+        <img src="img/slide-04-complete-stack_light.jpg"
+             data-image-base="slide-04-complete-stack"
+             alt="Complete Observability Stack Architecture"
+             class="diagram-image">
+      </div>
+
+      <!-- Architecture Overview -->
+      <section class="content-section">
+        <h2>Complete Architecture</h2>
+        <p>
+          Our observability stack consists of 11 Docker containers, each serving a specific purpose.
+          This is a production-ready, fully operational implementation that you can run locally.
+        </p>
+      </section>
+
+      <!-- The Stack Components -->
+      <section class="content-section">
+        <h2>The Four Key Components</h2>
+        <div class="grid grid-2">
+          <div class="card pillar-purple-bg">
+            <div class="card-title">🔍 Service Discovery: Consul</div>
+            <ul>
+              <li><strong>Service Registry</strong>: Services register themselves</li>
+              <li><strong>Health Checking</strong>: Automatic failure detection</li>
+              <li><strong>Load Balancing</strong>: Client-side distribution</li>
+              <li><strong>Service Metadata</strong>: Tags, versions, endpoints</li>
+            </ul>
+            <p class="card-description">
+              <strong>Container</strong>: consul (port 8500)
+            </p>
+          </div>
+
+          <div class="card pillar-logs-bg">
+            <div class="card-title">📝 Logs: ELK Stack</div>
+            <ul>
+              <li><strong>Elasticsearch</strong>: Stores and indexes logs</li>
+              <li><strong>Logstash</strong>: Collects and processes logs</li>
+              <li><strong>Kibana</strong>: Visualizes and queries logs</li>
+            </ul>
+            <p class="card-description">
+              <strong>Containers</strong>: elasticsearch (9200/9300), logstash (4560/5044), kibana (5601)
+            </p>
+          </div>
+
+          <div class="card pillar-metrics-bg">
+            <div class="card-title">📊 Metrics: Prometheus + Grafana</div>
+            <ul>
+              <li><strong>Prometheus</strong>: Time-series database and scraper</li>
+              <li><strong>Grafana</strong>: Dashboards and visualization</li>
+              <li><strong>Micrometer</strong>: Metrics abstraction in Spring Boot</li>
+            </ul>
+            <p class="card-description">
+              <strong>Containers</strong>: prometheus (9090), grafana (3000)
+            </p>
+          </div>
+
+          <div class="card pillar-traces-bg">
+            <div class="card-title">🗺️ Tracing: MDC</div>
+            <ul>
+              <li><strong>RequestLoggingFilter</strong>: Sets MDC values</li>
+              <li><strong>MdcPropagationInterceptor</strong>: Propagates context</li>
+              <li><strong>HTTP Headers</strong>: X-Request-ID and more</li>
+            </ul>
+            <p class="card-description">
+              <strong>Implementation</strong>: Built into microservices (no separate container)
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11 Containers Breakdown -->
+      <section class="content-section">
+        <h2>The 11 Docker Containers</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Application Services (5)</div>
+            <ul>
+              <li><strong>person-front</strong>: Frontend web app (port 8080)</li>
+              <li><strong>person-service-client-1</strong>: Backend instance 1 (port 8081)</li>
+              <li><strong>person-service-client-2</strong>: Backend instance 2 (port 8082)</li>
+              <li><strong>person-service-client-3</strong>: Backend instance 3 (port 8083)</li>
+              <li><strong>mysql</strong>: Database (port 3306)</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Observability Tools (6)</div>
+            <ul>
+              <li><strong>consul</strong>: Service registry (port 8500)</li>
+              <li><strong>elasticsearch</strong>: Log storage (ports 9200, 9300)</li>
+              <li><strong>logstash</strong>: Log processing (ports 4560, 5044)</li>
+              <li><strong>kibana</strong>: Log visualization (port 5601)</li>
+              <li><strong>prometheus</strong>: Metrics collection (port 9090)</li>
+              <li><strong>grafana</strong>: Metrics visualization (port 3000)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- How They Integrate -->
+      <section class="content-section">
+        <h2>How Everything Integrates</h2>
+        <div class="card highlight">
+          <div class="card-title">Standard Protocols</div>
+          <ul>
+            <li><strong>Consul</strong>: Services register via Spring Cloud Consul Discovery</li>
+            <li><strong>ELK</strong>: Services send JSON logs to Logstash via TCP</li>
+            <li><strong>Prometheus</strong>: Scrapes /actuator/prometheus endpoints via HTTP</li>
+            <li><strong>Grafana</strong>: Queries Prometheus via PromQL</li>
+            <li><strong>MDC</strong>: Propagates via HTTP headers (X-Request-ID, etc.)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Quick Start -->
+      <section class="content-section">
+        <h2>Running the Complete Stack</h2>
+        <div class="card">
+          <div class="card-title">Single Command to Start Everything</div>
+          <pre><code>docker compose up --build -d</code></pre>
+          <p>This command:</p>
+          <ul>
+            <li>Builds all 5 application containers</li>
+            <li>Starts all 6 observability tools</li>
+            <li>Configures networking between containers</li>
+            <li>Waits for dependencies (MySQL, Consul)</li>
+            <li>Registers services with Consul</li>
+            <li>Starts sending logs to ELK</li>
+            <li>Exposes metrics to Prometheus</li>
+          </ul>
+          <p class="card-description">
+            <strong>Result</strong>: Fully operational observability stack in under 5 minutes!
+          </p>
+        </div>
+      </section>
+
+      <!-- Key Takeaways -->
+      <section class="key-takeaways">
+        <h3>Key Takeaways</h3>
+        <ul>
+          <li>Complete stack runs in 11 Docker containers (5 app + 6 tools)</li>
+          <li>Each tool serves a specific purpose: discovery, logs, metrics, visualization</li>
+          <li>All integrated through standard protocols (HTTP, TCP, PromQL)</li>
+          <li>Production-ready, fully operational, can be run locally</li>
+        </ul>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer class="footer-nav">
+    <div class="container">
+      <div class="footer-nav-content">
+        <a href="page-03-three-pillars.html" class="footer-nav-button">
+          <div>
+            <div class="footer-nav-label">Previous</div>
+            <div class="footer-nav-title">← The Three Pillars</div>
+          </div>
+        </a>
+
+        <a href="page-05-logs-elk.html" class="footer-nav-button primary">
+          <div>
+            <div class="footer-nav-label">Next</div>
+            <div class="footer-nav-title">Logs with ELK Stack →</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="scripts/theme-toggle.js"></script>
+  <script src="scripts/navigation.js"></script>
+  <script src="scripts/progress.js"></script>
+</body>
+</html>
