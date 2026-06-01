@@ -2094,7 +2094,39 @@ open http://localhost:3000
    - Click on "Dashboards" (4 squares icon) in the left menu
    - Select "Person Service - Business Metrics" or "Person Service - JVM & Infrastructure"
 
-#### Dashboard 1: Business Metrics
+**Dashboard List View**:
+
+![Grafana Dashboard List](img/grafana/01-grafana-dashboard-list.png)
+
+*Screenshot: Grafana main dashboard list showing all 3 pre-configured dashboards (Person Front, Person Service Business Metrics, and Person Service JVM)*
+
+#### Dashboard 1: Person Frontend Service
+
+This dashboard visualizes all frontend-specific metrics including user interactions, backend communication, and page rendering performance.
+
+![Person Frontend Dashboard](img/grafana/02-grafana-dashbnoard-person-front.png)
+
+*Screenshot: Person Frontend dashboard showing operation counters, success rate, backend errors, and page render performance over time*
+
+**Key Panels**:
+1. **Frontend Operations** (Stat panels) - Counter for list, view, create, update, delete operations
+2. **Frontend Success Rate** (Gauge) - Percentage of successful operations
+3. **Backend Errors** (Stat) - Failed communication attempts with backend services
+4. **Operations Over Time** (Time Series) - Rate of user interactions
+5. **Page Render Time** (Graph) - Frontend rendering performance metrics
+
+**Page Render Time Detail**:
+
+![Person Frontend Page Render Detail](img/grafana/03-grafana-dashboard-person-front-page-renders.png)
+
+*Screenshot: Detailed view of page render times showing p50, p95, and p99 percentiles with time range selector*
+
+This panel helps identify:
+- **Normal render times**: p50 (median) around 50-100ms
+- **Slow pages**: p95 and p99 spikes indicating performance issues
+- **Time-based patterns**: Peak hours vs off-peak performance
+
+#### Dashboard 2: Person Service - Business Metrics
 
 **Panels**:
 1. **Total Persons in Database** (Stat) - Current count from `person_repository_count`
@@ -2111,17 +2143,141 @@ open http://localhost:3000
 12. **Delete Failures** (Stat) - Non-existent delete attempts
 13. **Frontend Page Render Time p95** (Time Series) - Frontend performance
 
-#### Dashboard 2: JVM & Infrastructure Metrics
+#### Dashboard 3: Person Service - JVM & Infrastructure Metrics
 
-**Panels**:
-1. **JVM Heap Memory Usage** (Time Series) - Heap used vs max
-2. **JVM Non-Heap Memory Usage** (Time Series) - Metaspace, code cache
-3. **GC Pause Time** (Time Series) - Garbage collection duration
-4. **JVM Threads** (Time Series) - Live and daemon threads
-5. **Database Connection Pool** (Stacked Area) - Active and idle connections
-6. **CPU Usage** (Time Series) - Process and system CPU
-7. **HTTP Request Rate** (Time Series) - Requests per second
-8. **HTTP Response Time Percentiles** (Time Series) - p50, p95, p99
+This comprehensive dashboard monitors the health and performance of the backend service instances, including JVM metrics, memory usage, threading, and database connections.
+
+![Person Service JVM Dashboard](img/grafana/04-grafana-dashboard-person-service-jvm.png)
+
+*Screenshot: Complete JVM & Infrastructure dashboard showing memory pools, GC activity, thread counts, CPU usage, and system load metrics*
+
+**Key Panels**:
+1. **JVM Heap Memory Usage** (Time Series) - Heap used vs max across all service instances
+2. **JVM Non-Heap Memory Usage** (Time Series) - Metaspace, code cache, and compressed class space
+3. **GC Pause Time** (Time Series) - Garbage collection duration and frequency
+4. **JVM Threads** (Time Series) - Live and daemon threads per instance
+5. **Database Connection Pool** (Stacked Area) - HikariCP active and idle connections
+6. **CPU Usage** (Time Series) - Process and system CPU percentage
+7. **HTTP Request Rate** (Time Series) - Requests per second by service instance
+8. **HTTP Response Time Percentiles** (Time Series) - p50, p95, p99 latency
+
+**What to Monitor**:
+- **Memory**: Heap usage should stay below 80% of max
+- **GC**: Frequent long pauses (>100ms) indicate memory pressure
+- **Threads**: Steady increase may indicate thread leaks
+- **Connection Pool**: Consistently maxed out connections suggest pool size increase needed
+- **CPU**: Sustained >80% usage requires investigation or scaling
+
+**API Call Performance Detail**:
+
+![Person Service API Calls](img/grafana/05-grafana-dashboard-person-service-api-calls.png)
+
+*Screenshot: Detailed metrics showing API endpoint performance, operation counts, validation errors, and response time distributions*
+
+This view includes:
+- **API Request Distribution**: Calls by endpoint (GET /people, POST /people, etc.)
+- **Operation Success vs Errors**: Track create/update/delete success rates
+- **Validation Errors by Field**: Identify which fields fail validation most often
+- **Response Time by Percentile**: p50, p95, p99 for each operation type
+- **Service Instance Health**: Individual metrics for service-1, service-2, service-3
+
+### Practical Walkthrough: Using the Dashboards
+
+#### Scenario 1: Investigating Slow Performance
+
+**User Report**: "The application feels slow when creating persons"
+
+**Step 1**: Open the **Person Frontend Dashboard**
+
+![Person Frontend Dashboard](img/grafana/02-grafana-dashbnoard-person-front.png)
+
+Look at the **Page Render Time** panel:
+- Check if p95 and p99 are significantly higher than p50
+- If frontend is fast (<100ms), the issue is likely backend
+
+**Step 2**: Open the **Person Service - JVM Dashboard**
+
+![Person Service JVM](img/grafana/04-grafana-dashboard-person-service-jvm.png)
+
+Check these indicators:
+1. **Memory**: Is heap usage >80%? → Memory pressure, increase heap or optimize code
+2. **GC Pause Time**: Are there frequent long pauses? → GC tuning needed
+3. **Database Connection Pool**: Are connections maxed out? → Increase pool size
+4. **CPU Usage**: Is CPU >80%? → Consider scaling horizontally
+
+**Step 3**: Check API Performance Detail
+
+![API Performance](img/grafana/05-grafana-dashboard-person-service-api-calls.png)
+
+Look at:
+- **POST /people response time**: Is it higher than other endpoints?
+- **Operation errors**: Are there validation failures causing retries?
+- **Service instance comparison**: Is one instance slower than others?
+
+**Common Issues & Solutions**:
+- High response time + low CPU = Database bottleneck → Add indexes
+- High response time + high CPU = Code optimization needed
+- High response time + connection pool maxed = Increase pool size
+- One instance slow, others fast = Instance-specific issue (restart that instance)
+
+#### Scenario 2: Monitoring Load Test
+
+**Goal**: Verify the system can handle 100 concurrent users
+
+**Step 1**: Set time range to "Last 5 minutes" (top right)
+
+**Step 2**: Run load test in another terminal:
+```bash
+# Example using Apache Bench
+ab -n 1000 -c 100 http://localhost:8080/people
+```
+
+**Step 3**: Monitor in real-time
+
+Watch the **Person Service JVM Dashboard**:
+- **HTTP Request Rate**: Should spike to ~100 req/s
+- **Response Time p95**: Should stay under 200ms
+- **CPU Usage**: Note peak usage
+- **Memory**: Check if heap increases linearly (memory leak indicator)
+- **Connection Pool**: Should not reach maximum
+
+**Success Criteria**:
+- ✅ All requests complete without errors
+- ✅ p95 response time < 200ms
+- ✅ CPU < 80% peak
+- ✅ Memory returns to baseline after test
+- ✅ No connection pool exhaustion
+
+#### Scenario 3: Daily Health Check
+
+**Morning Routine**: Check system health before the workday
+
+**Step 1**: Open **Person Service - JVM Dashboard**
+
+Quick checks:
+1. Are all 3 service instances reporting? (Check legend on graphs)
+2. Is memory trending upward over multiple days? (Memory leak)
+3. Any error spikes overnight?
+
+**Step 2**: Open **Person Frontend Dashboard**
+
+Verify:
+1. Success rate is near 100%
+2. Backend errors are 0 or near-zero
+3. Page render times are stable
+
+**Step 3**: Review Time Range
+
+Change time range to "Last 24 hours" to spot:
+- Traffic patterns (peak hours)
+- Overnight batch job impact
+- Early morning issues
+
+**Red Flags** 🚩:
+- Memory steadily climbing = Memory leak
+- GC pause time increasing = Heap pressure
+- Connection pool constantly maxed = Underprovisioned
+- One service instance missing = Failed deployment or crash
 
 #### Using Prometheus Queries
 
@@ -2180,20 +2336,47 @@ curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job, in
 
 #### Configuration Files
 
-**Prometheus**: `prometheus-config/prometheus.yml`
-- Consul service discovery configuration
-- Scrape intervals and timeouts
-- Relabeling rules
+All monitoring configurations are centralized in the `docker-configs/` directory:
 
-**Grafana Datasource**: `grafana-provisioning/datasources/prometheus.yml`
-- Auto-configured Prometheus connection
+```
+docker-configs/
+├── prometheus-config/
+│   └── prometheus.yml                    # Scrape config with Consul SD
+├── grafana-config/
+│   ├── provisioning/
+│   │   ├── datasources/
+│   │   │   └── prometheus.yml            # Auto-provision Prometheus datasource
+│   │   └── dashboards/
+│   │       └── dashboard.yml             # Auto-load dashboard config
+│   └── dashboards/
+│       ├── person-front-dashboard.json   # Frontend metrics
+│       ├── person-service-dashboard.json # Business metrics
+│       └── jvm-metrics-dashboard.json    # JVM & infrastructure
+└── logstash-config/
+    └── logstash-tcp-input.conf           # Log ingestion pipeline
+```
 
-**Grafana Dashboards**: `grafana-provisioning/dashboards/dashboard.yml`
-- Auto-load dashboards from `grafana-dashboards/` folder
+**Prometheus Configuration** (`docker-configs/prometheus-config/prometheus.yml`):
+- Consul service discovery for automatic target detection
+- 15-second scrape interval for all services
+- 30-day data retention
+- Relabeling rules for cleaner metric labels
 
-**Dashboard JSONs**:
-- `grafana-dashboards/person-service-dashboard.json` - Business metrics
-- `grafana-dashboards/jvm-metrics-dashboard.json` - JVM & infrastructure
+**Grafana Datasource** (`docker-configs/grafana-config/provisioning/datasources/prometheus.yml`):
+- Auto-configured Prometheus connection on startup
+- No manual datasource setup required
+- 15-second refresh interval
+- POST method for large queries
+
+**Grafana Dashboard Provisioning** (`docker-configs/grafana-config/provisioning/dashboards/dashboard.yml`):
+- Automatically loads all JSON dashboards from `docker-configs/grafana-config/dashboards/`
+- Dashboards update every 10 seconds
+- Allow UI updates (changes persist)
+
+**Dashboard JSON Files**:
+- `person-front-dashboard.json` - Frontend operations and page performance
+- `person-service-dashboard.json` - Backend business metrics and API calls
+- `jvm-metrics-dashboard.json` - JVM, memory, GC, threads, connection pool
 
 #### Customizing Dashboards
 

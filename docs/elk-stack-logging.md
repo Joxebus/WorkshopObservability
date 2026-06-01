@@ -893,29 +893,83 @@ First time, you'll see the Kibana welcome screen.
 
 #### 2. Create Index Pattern
 
-**Step 1**: Navigate to Management
-- Click hamburger menu (☰) → Management → Stack Management
+Kibana needs an **index pattern** to know which Elasticsearch indices to query. Follow these visual steps:
 
-**Step 2**: Go to Index Patterns
-- Click "Index Patterns" under Kibana section
+**Step 1: Navigate to Index Pattern Creation**
 
-**Step 3**: Create Index Pattern
-- Click "Create index pattern"
-- Enter pattern: `logstash-*`
-- This matches: `logstash-2026.04.18`, `logstash-2026.04.19`, etc.
+Navigate to **Management** → **Stack Management** → **Index Patterns** → **Create index pattern**
 
-**Step 4**: Select Time Field
-- Choose `@timestamp` from dropdown
-- Click "Create index pattern"
+![Create Index Pattern](img/kibana/01-kibana-create-index-pattern.png)
 
-**Step 5**: Verify
-- You should see list of fields (message, level, application_name, etc.)
+*Screenshot: Initial screen to create a new index pattern in Kibana*
 
-#### 3. Configure Default Columns
+---
 
-Go to Discover view and customize columns:
-- Click "+ Add" → Select: `@timestamp`, `level`, `application_name`, `message`
-- Click "Save" → "Save current query"
+**Step 2: Define Index Pattern**
+
+Enter the pattern `logstash-*` to match all daily Logstash indices (e.g., `logstash-2026.04.18`, `logstash-2026.04.19`, etc.)
+
+Kibana will show you which indices match this pattern.
+
+![Define Index Pattern](img/kibana/02-kibana-define-index-pattern.png)
+
+*Screenshot: Defining the logstash-* pattern and verifying matched indices*
+
+---
+
+**Step 3: Configure Time Field**
+
+Select `@timestamp` as the **Time field**. This field is used for time-based filtering and sorting.
+
+Click **Create index pattern** to complete the setup.
+
+![Configure Index Pattern](img/kibana/03-kibana-configure-index-pattern.png)
+
+*Screenshot: Selecting the @timestamp field for time-based queries*
+
+---
+
+**Step 4: Verify Index Pattern**
+
+After creation, you'll see a list of all available fields from your logs:
+- `message` - Log message content
+- `level` - Log level (INFO, ERROR, WARN, DEBUG)
+- `application_name` - Service name (person-front, person-service-client)
+- `request_id` - MDC tracking ID for distributed tracing
+- `service_type` - Service category (frontend, backend)
+- And many more...
+
+Your index pattern is now ready! 🎉
+
+#### 3. Discover View - Querying Logs
+
+Once your index pattern is created, go to **Discover** view to start searching logs.
+
+**Navigate to Discover**:
+- Click hamburger menu (☰) → **Discover**
+- Select your `logstash-*` index pattern (if not already selected)
+
+![Discover Logs from Index Pattern](img/kibana/04-kibana-discover-logs-from-index-pattern.png)
+
+*Screenshot: Discover view showing logs from all services with time distribution histogram*
+
+**Key Features in Discover View**:
+
+1. **Time Range Picker** (top right): Select time window (Last 15 minutes, Last hour, Last 24 hours, etc.)
+2. **Search Bar**: Use KQL (Kibana Query Language) to filter logs
+3. **Histogram**: Visual distribution of logs over time
+4. **Available Fields** (left sidebar): All indexed fields from your logs
+5. **Document Table**: Log entries with selected columns
+6. **Document Count**: Total matching logs
+
+#### 4. Configure Default Columns
+
+Customize which fields to display in the document table:
+
+1. In Discover view, click **+ Add** next to column headers
+2. Select fields: `@timestamp`, `level`, `service_alias`, `application_name`, `message`, `request_id`
+3. Drag columns to reorder
+4. Click **Save** → **Save current query** to persist your view
 
 ### Using Discover View
 
@@ -962,33 +1016,183 @@ level_value >= 30000
 @timestamp >= "2026-04-20T00:00:00" AND @timestamp < "2026-04-21T00:00:00"
 ```
 
-#### Example Queries
+#### Example Queries for This Project
+
+Use these queries in the Kibana search bar to find specific logs from your microservices:
+
+**🔍 Service-Specific Queries**
 
 ```
-# All errors from service-1
-level: ERROR AND message: *service-1*
+# All logs from frontend
+application_name: "person-front"
 
-# Find specific person operations
-message: "Person created" OR message: "Person updated" OR message: "Person deleted"
+# All logs from backend services
+application_name: "person-service-client"
+
+# Logs from specific backend instance
+service_alias: "service-1"
+
+# All errors from service-1
+level: ERROR AND service_alias: "service-1"
+```
+
+**🐛 Error & Exception Tracking**
+
+```
+# All errors across all services
+level: ERROR
+
+# Warnings and errors
+level: WARN OR level: ERROR
+
+# Find exceptions with stack traces
+_exists_: stack_trace
 
 # Find database errors
-message: *SQLException* OR message: *database*
-
-# Find slow queries (if logged)
-message: *slow* OR message: *timeout*
+message: *SQLException* OR message: *database* OR message: *JPA*
 
 # Find validation errors
-message: *validation* OR message: *constraint*
+message: *validation* OR message: *constraint* OR message: *ConstraintViolation*
 
-# Find specific user actions (if request_id in MDC)
+# Find connection errors
+message: *connection* OR message: *timeout* OR message: *refused*
+```
+
+**👤 Person CRUD Operations**
+
+```
+# All person creation events
+message: "Person created"
+
+# All person updates
+message: "Person updated"
+
+# All person deletions
+message: "Person deleted"
+
+# All person operations
+message: "Person created" OR message: "Person updated" OR message: "Person deleted"
+
+# Find operations on specific person ID
+message: *"id=5"*
+```
+
+**🔗 Distributed Tracing with MDC**
+
+```
+# Follow a specific request across all services (Frontend → Backend)
 request_id: "abc-123-def-456"
 
-# Find logs from specific thread
+# Find all requests from specific IP
+user_ip: "172.18.0.1"
+
+# Find all POST requests
+http_method: "POST"
+
+# Find requests to specific URI
+request_uri: "/people"
+```
+
+**⚡ Performance Monitoring**
+
+```
+# Find slow operations (if logged with execution time)
+message: *slow* OR message: *timeout*
+
+# Find logs from specific thread (useful for tracing)
 thread_name: "http-nio-8081-exec-5"
 
-# Find logs from specific time range with error
-@timestamp >= "2026-04-20T19:00:00" AND level: ERROR
+# Find high-traffic periods (combine with time histogram)
+application_name: "person-service-client" AND level: INFO
 ```
+
+**📊 Time-Based Queries**
+
+```
+# Errors in last hour
+level: ERROR AND @timestamp >= now-1h
+
+# Logs from specific date range
+@timestamp >= "2026-04-20T00:00:00" AND @timestamp < "2026-04-21T00:00:00"
+
+# Recent errors from specific service
+level: ERROR AND application_name: "person-front" AND @timestamp >= now-15m
+```
+
+**🔬 Advanced Queries**
+
+```
+# Frontend errors communicating with backend
+application_name: "person-front" AND level: ERROR AND message: *RestTemplate*
+
+# Find logs with MDC context but no request_id (debugging MDC issues)
+_exists_: user_ip AND NOT _exists_: request_id
+
+# Find logs from specific logger class
+logger_name: "io.github.joxebus.controller.PersonController"
+
+# Exclude health check logs (reduce noise)
+NOT message: *actuator* AND NOT message: *health*
+
+# Find logs with specific service port (useful for multi-instance debugging)
+service_port: "8081"
+```
+
+### Practical Walkthrough: Tracing a Request
+
+Let's walk through a real scenario using the Kibana Discover view shown in the screenshot above.
+
+**Scenario**: A user creates a new person via the frontend. Let's trace this request through both services.
+
+**Step 1: Find the Frontend Request**
+
+In Kibana search bar:
+```
+application_name: "person-front" AND message: "Request started"
+```
+
+Look for a log entry with:
+- `request_id`: e.g., `"550e8400-e29b-41d4-a716-446655440000"`
+- `http_method`: `"POST"`
+- `request_uri`: `"/people"`
+
+**Step 2: Copy the request_id**
+
+Click on the log entry to expand it, then copy the `request_id` value.
+
+**Step 3: Search by request_id**
+
+Clear the search bar and enter:
+```
+request_id: "550e8400-e29b-41d4-a716-446655440000"
+```
+
+You'll now see **all logs** from **both services** (frontend AND backend) for this single request!
+
+**What You'll See**:
+
+```
+Timeline view in Discover:
+────────────────────────────────────────────────────────────
+19:45:23.100 | person-front      | INFO  | Request started (POST /people)
+19:45:23.120 | person-front      | DEBUG | Calling backend: POST http://person-service-client/people
+19:45:23.125 | service-1         | INFO  | Request received (POST /people)
+19:45:23.130 | service-1         | DEBUG | Validating person data
+19:45:23.135 | service-1         | DEBUG | Saving to database
+19:45:23.145 | service-1         | INFO  | Person created: Person{id=5, name='John'}
+19:45:23.150 | person-front      | INFO  | Backend response: 201 CREATED
+19:45:23.155 | person-front      | INFO  | Request completed (duration: 55ms)
+────────────────────────────────────────────────────────────
+```
+
+This is the power of **distributed tracing with MDC**! 🎯
+
+**Step 4: Analyze the Flow**
+
+- Check the time differences between logs to identify bottlenecks
+- Look for any ERROR or WARN level logs in the chain
+- Verify the request propagated correctly (same `request_id` in all logs)
+- Confirm the response time is acceptable
 
 #### Filtering
 

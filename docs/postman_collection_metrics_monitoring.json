@@ -1,0 +1,1253 @@
+{
+  "info": {
+    "name": "Metrics and Monitoring - Workshop",
+    "_postman_id": "consul-elk-metrics-workshop",
+    "description": "Comprehensive collection of metrics and monitoring endpoints from the Spring Boot 3 microservices workshop with Consul service discovery and ELK stack",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "backend_url",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "frontend_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "consul_url",
+      "value": "http://localhost:8500",
+      "type": "string"
+    },
+    {
+      "key": "elasticsearch_url",
+      "value": "http://localhost:9200",
+      "type": "string"
+    },
+    {
+      "key": "prometheus_url",
+      "value": "http://localhost:9090",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Spring Boot Actuator",
+      "description": "Health and metrics endpoints from Spring Boot Actuator",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/health",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Check the health status of the backend service"
+          }
+        },
+        {
+          "name": "List All Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics"]
+            },
+            "description": "Get a list of all available metrics"
+          }
+        },
+        {
+          "name": "Prometheus Format Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/prometheus",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "prometheus"]
+            },
+            "description": "Get all metrics in Prometheus format for scraping"
+          }
+        }
+      ]
+    },
+    {
+      "name": "JVM Metrics",
+      "description": "JVM memory, garbage collection, and thread metrics",
+      "item": [
+        {
+          "name": "JVM Memory Used",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.memory.used",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.memory.used"]
+            },
+            "description": "Total JVM memory used across all areas"
+          }
+        },
+        {
+          "name": "JVM Heap Memory Used",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.memory.used?tag=area:heap",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.memory.used"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "area:heap"
+                }
+              ]
+            },
+            "description": "JVM heap memory currently in use"
+          }
+        },
+        {
+          "name": "JVM Heap Memory Max",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.memory.max?tag=area:heap",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.memory.max"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "area:heap"
+                }
+              ]
+            },
+            "description": "Maximum JVM heap memory available"
+          }
+        },
+        {
+          "name": "JVM Heap Memory Committed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.memory.committed?tag=area:heap",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.memory.committed"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "area:heap"
+                }
+              ]
+            },
+            "description": "JVM heap memory guaranteed to be available"
+          }
+        },
+        {
+          "name": "GC Pause Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.gc.pause",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.gc.pause"]
+            },
+            "description": "Time spent in GC pause events"
+          }
+        },
+        {
+          "name": "GC Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.gc.count",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.gc.count"]
+            },
+            "description": "Total number of garbage collections"
+          }
+        },
+        {
+          "name": "Live Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.threads.live",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.threads.live"]
+            },
+            "description": "Current number of live threads"
+          }
+        },
+        {
+          "name": "Daemon Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.threads.daemon",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.threads.daemon"]
+            },
+            "description": "Current number of daemon threads"
+          }
+        },
+        {
+          "name": "Peak Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/jvm.threads.peak",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "jvm.threads.peak"]
+            },
+            "description": "Peak number of threads since JVM start"
+          }
+        }
+      ]
+    },
+    {
+      "name": "HTTP Server Metrics",
+      "description": "HTTP request statistics by URI, status, and method",
+      "item": [
+        {
+          "name": "All HTTP Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/http.server.requests",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "http.server.requests"]
+            },
+            "description": "Aggregate statistics for all HTTP requests"
+          }
+        },
+        {
+          "name": "Requests by URI (/people)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/http.server.requests?tag=uri:/people",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "http.server.requests"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "uri:/people"
+                }
+              ]
+            },
+            "description": "Statistics for requests to /people endpoint"
+          }
+        },
+        {
+          "name": "Requests by Status (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/http.server.requests?tag=status:200",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "http.server.requests"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "status:200"
+                }
+              ]
+            },
+            "description": "Statistics for successful (200) requests"
+          }
+        },
+        {
+          "name": "Requests by Status (500)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/http.server.requests?tag=status:500",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "http.server.requests"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "status:500"
+                }
+              ]
+            },
+            "description": "Statistics for server error (500) requests"
+          }
+        },
+        {
+          "name": "Requests by Method (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/http.server.requests?tag=method:GET",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "http.server.requests"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "method:GET"
+                }
+              ]
+            },
+            "description": "Statistics for GET requests"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Database Connection Pool (HikariCP)",
+      "description": "HikariCP connection pool metrics for database connections",
+      "item": [
+        {
+          "name": "Active Connections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections.active",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections.active"]
+            },
+            "description": "Number of active database connections currently in use"
+          }
+        },
+        {
+          "name": "Idle Connections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections.idle",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections.idle"]
+            },
+            "description": "Number of idle connections waiting in the pool"
+          }
+        },
+        {
+          "name": "Total Connections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections"]
+            },
+            "description": "Total number of connections in the pool"
+          }
+        },
+        {
+          "name": "Pending Connections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections.pending",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections.pending"]
+            },
+            "description": "Number of threads waiting for a connection"
+          }
+        },
+        {
+          "name": "Connection Timeout Total",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections.timeout.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections.timeout.total"]
+            },
+            "description": "Total number of connection timeouts"
+          }
+        },
+        {
+          "name": "Connection Creation Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections.creation",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections.creation"]
+            },
+            "description": "Time spent creating new connections"
+          }
+        },
+        {
+          "name": "Connection Acquire Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/hikaricp.connections.acquire",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "hikaricp.connections.acquire"]
+            },
+            "description": "Time spent acquiring a connection from the pool"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tomcat Metrics",
+      "description": "Embedded Tomcat server thread pool and session metrics",
+      "item": [
+        {
+          "name": "Busy Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.threads.busy",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.threads.busy"]
+            },
+            "description": "Number of busy request processing threads"
+          }
+        },
+        {
+          "name": "Current Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.threads.current",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.threads.current"]
+            },
+            "description": "Current number of threads in the pool"
+          }
+        },
+        {
+          "name": "Max Threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.threads.config.max",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.threads.config.max"]
+            },
+            "description": "Maximum configured thread pool size"
+          }
+        },
+        {
+          "name": "Active Sessions Current",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.sessions.active.current",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.sessions.active.current"]
+            },
+            "description": "Current number of active HTTP sessions"
+          }
+        },
+        {
+          "name": "Active Sessions Max",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.sessions.active.max",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.sessions.active.max"]
+            },
+            "description": "Peak number of active sessions"
+          }
+        },
+        {
+          "name": "Sessions Created",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.sessions.created",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.sessions.created"]
+            },
+            "description": "Total number of sessions created"
+          }
+        },
+        {
+          "name": "Sessions Rejected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/tomcat.sessions.rejected",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "tomcat.sessions.rejected"]
+            },
+            "description": "Number of sessions rejected due to max active sessions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Custom Business Metrics - Service Layer",
+      "description": "Custom metrics tracking person operations, validation, and performance",
+      "item": [
+        {
+          "name": "Total Operations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.operations.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.operations.total"]
+            },
+            "description": "Total count of all person CRUD operations"
+          }
+        },
+        {
+          "name": "Create Operations - Success",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.operations.total?tag=operation:create&tag=result:success",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.operations.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "operation:create"
+                },
+                {
+                  "key": "tag",
+                  "value": "result:success"
+                }
+              ]
+            },
+            "description": "Count of successful person creation operations"
+          }
+        },
+        {
+          "name": "Operations by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.operations?tag=operation:create",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.operations"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "operation:create"
+                }
+              ]
+            },
+            "description": "Operations filtered by type (create, update, delete, list)"
+          }
+        },
+        {
+          "name": "Failed Operations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.operations?tag=result:failed",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.operations"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "result:failed"
+                }
+              ]
+            },
+            "description": "Count of failed operations"
+          }
+        },
+        {
+          "name": "Repository Total (Gauge)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.repository.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.repository.total"]
+            },
+            "description": "Current total number of persons in database"
+          }
+        },
+        {
+          "name": "Repository Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.repository.count",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.repository.count"]
+            },
+            "description": "Current count of person records"
+          }
+        },
+        {
+          "name": "Service Execution Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.service.execution.time",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.service.execution.time"]
+            },
+            "description": "Timing statistics for service layer methods"
+          }
+        },
+        {
+          "name": "Operation Duration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.operation.duration",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.operation.duration"]
+            },
+            "description": "Duration statistics for person operations"
+          }
+        },
+        {
+          "name": "Operation Duration by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.operation.duration?tag=operation:save",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.operation.duration"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "operation:save"
+                }
+              ]
+            },
+            "description": "Duration for specific operation type (save, delete, etc.)"
+          }
+        },
+        {
+          "name": "Validation Errors Total",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.validation.errors.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.validation.errors.total"]
+            },
+            "description": "Total count of validation errors"
+          }
+        },
+        {
+          "name": "Validation Errors by Field",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.validation.errors.total?tag=field:email",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.validation.errors.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "field:email"
+                }
+              ]
+            },
+            "description": "Validation errors for specific field (email, name, etc.)"
+          }
+        },
+        {
+          "name": "Delete Failures",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.delete.failures.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.delete.failures.total"]
+            },
+            "description": "Count of failed delete operations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Custom Business Metrics - Controller Layer",
+      "description": "API endpoint request tracking and response time metrics",
+      "item": [
+        {
+          "name": "API Requests Total",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.api.requests.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.api.requests.total"]
+            },
+            "description": "Total API requests to person endpoints"
+          }
+        },
+        {
+          "name": "API Requests by Endpoint and Method",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.api.requests.total?tag=endpoint:/people&tag=method:GET",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.api.requests.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "endpoint:/people"
+                },
+                {
+                  "key": "tag",
+                  "value": "method:GET"
+                }
+              ]
+            },
+            "description": "Requests filtered by specific endpoint and HTTP method"
+          }
+        },
+        {
+          "name": "API Requests - Success (2xx)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.api.requests.total?tag=status:2xx",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.api.requests.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "status:2xx"
+                }
+              ]
+            },
+            "description": "Count of successful API requests"
+          }
+        },
+        {
+          "name": "API Requests - Client Errors (4xx)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.api.requests.total?tag=status:4xx",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.api.requests.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "status:4xx"
+                }
+              ]
+            },
+            "description": "Count of client error responses"
+          }
+        },
+        {
+          "name": "API Response Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/person.api.response.time?tag=endpoint:/people&tag=method:GET",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "person.api.response.time"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "endpoint:/people"
+                },
+                {
+                  "key": "tag",
+                  "value": "method:GET"
+                }
+              ]
+            },
+            "description": "Response time statistics for API endpoints"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Custom Business Metrics - Frontend",
+      "description": "Frontend application metrics for user operations and backend communication",
+      "item": [
+        {
+          "name": "Frontend Requests Total",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/actuator/metrics/person.frontend.requests.total",
+              "host": ["{{frontend_url}}"],
+              "path": ["actuator", "metrics", "person.frontend.requests.total"]
+            },
+            "description": "Total requests handled by the frontend"
+          }
+        },
+        {
+          "name": "Frontend Requests by Operation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/actuator/metrics/person.frontend.requests.total?tag=operation:list&tag=result:success",
+              "host": ["{{frontend_url}}"],
+              "path": ["actuator", "metrics", "person.frontend.requests.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "operation:list"
+                },
+                {
+                  "key": "tag",
+                  "value": "result:success"
+                }
+              ]
+            },
+            "description": "Frontend requests filtered by operation type and result"
+          }
+        },
+        {
+          "name": "Frontend Errors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/actuator/metrics/person.frontend.requests.total?tag=result:error",
+              "host": ["{{frontend_url}}"],
+              "path": ["actuator", "metrics", "person.frontend.requests.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "result:error"
+                }
+              ]
+            },
+            "description": "Count of frontend errors"
+          }
+        },
+        {
+          "name": "Backend Communication Errors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/actuator/metrics/person.frontend.backend.errors.total?tag=operation:list",
+              "host": ["{{frontend_url}}"],
+              "path": ["actuator", "metrics", "person.frontend.backend.errors.total"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "operation:list"
+                }
+              ]
+            },
+            "description": "Errors when frontend communicates with backend services"
+          }
+        },
+        {
+          "name": "Page Render Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/actuator/metrics/person.frontend.page.render.time?tag=page:list",
+              "host": ["{{frontend_url}}"],
+              "path": ["actuator", "metrics", "person.frontend.page.render.time"],
+              "query": [
+                {
+                  "key": "tag",
+                  "value": "page:list"
+                }
+              ]
+            },
+            "description": "Time taken to render frontend pages"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Custom Business Metrics - Bootstrap",
+      "description": "Metrics for application initialization and data loading",
+      "item": [
+        {
+          "name": "Bootstrap Data Loaded",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/bootstrap.data.loaded.total",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "bootstrap.data.loaded.total"]
+            },
+            "description": "Count of bootstrap data loading operations"
+          }
+        },
+        {
+          "name": "Bootstrap Execution Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/actuator/metrics/bootstrap.execution.time",
+              "host": ["{{backend_url}}"],
+              "path": ["actuator", "metrics", "bootstrap.execution.time"]
+            },
+            "description": "Time taken for bootstrap initialization"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consul - Service Discovery",
+      "description": "Consul service registry and discovery endpoints",
+      "item": [
+        {
+          "name": "List All Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consul_url}}/v1/catalog/services",
+              "host": ["{{consul_url}}"],
+              "path": ["v1", "catalog", "services"]
+            },
+            "description": "Get all services registered in Consul"
+          }
+        },
+        {
+          "name": "Get Service Instances",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consul_url}}/v1/catalog/service/person-service-client",
+              "host": ["{{consul_url}}"],
+              "path": ["v1", "catalog", "service", "person-service-client"]
+            },
+            "description": "Get all instances of person-service-client"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consul - Health Checks",
+      "description": "Consul health check endpoints for service monitoring",
+      "item": [
+        {
+          "name": "Service Health - All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consul_url}}/v1/health/service/person-service-client",
+              "host": ["{{consul_url}}"],
+              "path": ["v1", "health", "service", "person-service-client"]
+            },
+            "description": "Get health status for all service instances"
+          }
+        },
+        {
+          "name": "Service Health - Passing Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consul_url}}/v1/health/service/person-service-client?passing",
+              "host": ["{{consul_url}}"],
+              "path": ["v1", "health", "service", "person-service-client"],
+              "query": [
+                {
+                  "key": "passing",
+                  "value": null
+                }
+              ]
+            },
+            "description": "Get only healthy (passing) service instances"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consul - Agent Metrics",
+      "description": "Consul agent internal metrics",
+      "item": [
+        {
+          "name": "Agent Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{consul_url}}/v1/agent/metrics",
+              "host": ["{{consul_url}}"],
+              "path": ["v1", "agent", "metrics"]
+            },
+            "description": "Get Consul agent internal metrics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Elasticsearch - Cluster",
+      "description": "Elasticsearch cluster health and statistics",
+      "item": [
+        {
+          "name": "Cluster Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{elasticsearch_url}}/_cluster/health?pretty",
+              "host": ["{{elasticsearch_url}}"],
+              "path": ["_cluster", "health"],
+              "query": [
+                {
+                  "key": "pretty",
+                  "value": null
+                }
+              ]
+            },
+            "description": "Get Elasticsearch cluster health status"
+          }
+        },
+        {
+          "name": "List Indices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{elasticsearch_url}}/_cat/indices?v",
+              "host": ["{{elasticsearch_url}}"],
+              "path": ["_cat", "indices"],
+              "query": [
+                {
+                  "key": "v",
+                  "value": null
+                }
+              ]
+            },
+            "description": "List all Elasticsearch indices with statistics"
+          }
+        },
+        {
+          "name": "Node Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{elasticsearch_url}}/_nodes/stats?pretty",
+              "host": ["{{elasticsearch_url}}"],
+              "path": ["_nodes", "stats"],
+              "query": [
+                {
+                  "key": "pretty",
+                  "value": null
+                }
+              ]
+            },
+            "description": "Get statistics for all Elasticsearch nodes"
+          }
+        },
+        {
+          "name": "Index Stats (Indexing & Search)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{elasticsearch_url}}/_stats/indexing,search?pretty",
+              "host": ["{{elasticsearch_url}}"],
+              "path": ["_stats", "indexing,search"],
+              "query": [
+                {
+                  "key": "pretty",
+                  "value": null
+                }
+              ]
+            },
+            "description": "Get indexing and search statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prometheus - API",
+      "description": "Prometheus query API and target monitoring",
+      "item": [
+        {
+          "name": "List Targets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{prometheus_url}}/api/v1/targets",
+              "host": ["{{prometheus_url}}"],
+              "path": ["api", "v1", "targets"]
+            },
+            "description": "Get all Prometheus scrape targets and their status"
+          }
+        },
+        {
+          "name": "Query - Service Up Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{prometheus_url}}/api/v1/query?query=up",
+              "host": ["{{prometheus_url}}"],
+              "path": ["api", "v1", "query"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "up"
+                }
+              ]
+            },
+            "description": "Query which services are currently up"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Testing Endpoints",
+      "description": "REST endpoints for creating test data and generating metrics",
+      "item": [
+        {
+          "name": "List All People (Frontend)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/people",
+              "host": ["{{frontend_url}}"],
+              "path": ["people"]
+            },
+            "description": "View people list through frontend (Thymeleaf page)"
+          }
+        },
+        {
+          "name": "List All People (API)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/people",
+              "host": ["{{backend_url}}"],
+              "path": ["people"]
+            },
+            "description": "Get all people via REST API (JSON response)"
+          }
+        },
+        {
+          "name": "Create Person",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"age\": 30\n}"
+            },
+            "url": {
+              "raw": "{{backend_url}}/people",
+              "host": ["{{backend_url}}"],
+              "path": ["people"]
+            },
+            "description": "Create a new person (increments person.operations.total counter)"
+          }
+        },
+        {
+          "name": "Delete Person",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/people/1",
+              "host": ["{{backend_url}}"],
+              "path": ["people", "1"]
+            },
+            "description": "Delete a person by ID"
+          }
+        },
+        {
+          "name": "Create Invalid Person (Validation Error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"invalid-email\"\n}"
+            },
+            "url": {
+              "raw": "{{backend_url}}/people",
+              "host": ["{{backend_url}}"],
+              "path": ["people"]
+            },
+            "description": "Create person with validation errors (increments validation error counters)"
+          }
+        },
+        {
+          "name": "Delete Non-Existent Person",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/people/999",
+              "host": ["{{backend_url}}"],
+              "path": ["people", "999"]
+            },
+            "description": "Try to delete non-existent person (increments delete failure counter)"
+          }
+        }
+      ]
+    }
+  ]
+}
