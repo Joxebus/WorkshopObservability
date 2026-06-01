@@ -30,7 +30,7 @@ services:
       - "4560:4560"
       - "5044:5044"
     volumes:
-      - ./logstash-config:/usr/share/logstash/pipeline
+      - ./docker-configs/logstash-config:/usr/share/logstash/pipeline
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -70,7 +70,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus-config:/etc/prometheus
+      - ./docker-configs/prometheus-config:/etc/prometheus
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -102,8 +102,8 @@ services:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
       - GF_SECURITY_ALLOW_EMBEDDING=true
     volumes:
-      - ./grafana-config/provisioning:/etc/grafana/provisioning
-      - ./grafana-config/dashboards:/var/lib/grafana/dashboards
+      - ./docker-configs/grafana-config/provisioning:/etc/grafana/provisioning
+      - ./docker-configs/grafana-config/dashboards:/var/lib/grafana/dashboards
       - grafana-data:/var/lib/grafana
     depends_on:
       prometheus:
