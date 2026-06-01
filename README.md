@@ -17,14 +17,16 @@ A production-ready microservices architecture demonstrating service discovery wi
 - **Thymeleaf** 3.x for server-side rendering
 - **Spock Framework** 2.4-M4-groovy-4.0 for testing
 
-### Infrastructure
-- **Consul** (latest) - Service registry and health checking
-- **MySQL** 8.0 - Production database
-- **H2** - In-memory database for local development
-- **Elasticsearch** 7.10.2 - Log storage and search
-- **Logstash** 7.10.2 - Log aggregation and processing
+### Infrastructure & Observability
+- **Consul** 1.16.0 - Service registry and health checking
+- **MySQL** 8.0 - Production database (shared across service instances)
+- **H2** - File-based database for local development (with AUTO_SERVER=TRUE)
+- **Elasticsearch** 7.10.2 - Log storage and full-text search
+- **Logstash** 7.10.2 - Log aggregation and processing pipeline
 - **Kibana** 7.10.2 - Log visualization and analytics
-- **Docker** & **Docker Compose** - Containerization
+- **Prometheus** v2.45.0 - Metrics collection and time-series storage
+- **Grafana** 10.0.3 - Metrics visualization and dashboards
+- **Docker** & **Docker Compose** - Containerization and orchestration
 
 ## 📋 Prerequisites
 
@@ -49,39 +51,138 @@ A production-ready microservices architecture demonstrating service discovery wi
 
 ```
 consul-elk-sample/
-├── pom.xml                    # Parent POM (Spring Boot 3.2.3)
-├── spring-boot-common/        # Shared domain models
-│   └── Person.groovy          # JPA entity with Jakarta validation
-├── spring-boot-service/       # Backend REST API (3 instances)
+├── pom.xml                          # Parent POM (Spring Boot 3.2.3)
+├── spring-boot-common/              # Shared components
+│   ├── domain/
+│   │   └── Person.groovy            # JPA entity with Jakarta validation
+│   └── filter/
+│       └── RequestLoggingFilter.groovy # MDC logging filter
+├── spring-boot-service/             # Backend REST API (3 instances)
 │   ├── BackApplication.groovy
-│   ├── PersonController.groovy
-│   ├── PersonService.groovy
-│   └── PersonRepository.groovy (Spring Data JPA)
-└── spring-boot-front/         # Frontend web application
+│   ├── PersonController.groovy      # REST endpoints
+│   ├── PersonService.groovy         # Business logic
+│   ├── PersonRepository.groovy      # Spring Data JPA
+│   └── MetricsConfig.groovy         # 21 custom metric beans
+└── spring-boot-front/               # Frontend web application
     ├── FrontApplication.groovy
-    └── PersonController.groovy
+    ├── PersonController.groovy      # Web UI controllers
+    ├── MdcPropagationInterceptor.groovy # Distributed tracing
+    └── MetricsConfig.groovy         # 11 custom metric beans
 ```
 
-### Service Discovery Flow
+### Service Discovery & Communication Flow
 
 ```
-Frontend (port 8080)
-    ↓ (discovers via Consul)
-Load Balancer (@LoadBalanced RestTemplate)
-    ↓ (round-robin)
-┌──────────┬──────────┬──────────┐
-│ Service-1│ Service-2│ Service-3│
-│ :8081    │ :8082    │ :8083    │
-└──────────┴──────────┴──────────┘
-         ↓
-    MySQL 8.0 (shared database)
+┌─────────────────────────────────────────────────────────────┐
+│                    Consul (Service Registry)                 │
+│                         :8500                                │
+└─────────────────────────────────────────────────────────────┘
+          ↑                                    ↑
+     (register)                           (discover)
+          │                                    │
+    ┌─────┴────────────────────────────────────┴──────┐
+    │                                                  │
+    │  Frontend (person-front)                        │
+    │  :8080                                          │
+    │  ┌─────────────────────────────────┐            │
+    │  │ @LoadBalanced RestTemplate      │            │
+    │  │ (Client-Side Load Balancing)    │            │
+    │  └─────────────────────────────────┘            │
+    │           │ round-robin distribution             │
+    │           ↓                                      │
+    │  ┌──────────┬──────────┬──────────┐             │
+    │  │ Service-1│ Service-2│ Service-3│             │
+    │  │ :8081    │ :8082    │ :8083    │             │
+    │  └──────────┴──────────┴──────────┘             │
+    │           │                                      │
+    │           ↓                                      │
+    │  ┌────────────────────────────────┐             │
+    │  │  MySQL 8.0 (Shared Database)   │             │
+    │  │  :3306                          │             │
+    │  └────────────────────────────────┘             │
+    └──────────────────────────────────────────────────┘
 ```
 
-### Logging Pipeline
+### Observability Architecture
 
 ```
-All Services → Logstash → Elasticsearch → Kibana
+┌────────────────────────────────────────────────────────────┐
+│                    LOGGING PIPELINE                         │
+├────────────────────────────────────────────────────────────┤
+│                                                             │
+│  All Services (MDC + JSON)                                 │
+│         │                                                   │
+│         ↓ (TCP :4560)                                      │
+│  ┌──────────────┐    ┌──────────────┐    ┌─────────────┐ │
+│  │  Logstash    │ → │Elasticsearch │ → │   Kibana    │ │
+│  │   :4560      │    │    :9200     │    │   :5601     │ │
+│  └──────────────┘    └──────────────┘    └─────────────┘ │
+│  • Log aggregation   • Log storage      • Log analytics  │
+│  • JSON parsing      • Full-text search • Visualization  │
+│                                                             │
+└────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────┐
+│                   METRICS PIPELINE                          │
+├────────────────────────────────────────────────────────────┤
+│                                                             │
+│  All Services (/actuator/prometheus)                       │
+│         │                                                   │
+│         ↓ (scrape every 15s)                               │
+│  ┌──────────────┐    ┌──────────────┐                     │
+│  │ Prometheus   │ → │   Grafana    │                     │
+│  │   :9090      │    │    :3000     │                     │
+│  └──────────────┘    └──────────────┘                     │
+│  • Metrics storage   • 3 Dashboards:                       │
+│  • PromQL queries    • Person Frontend                     │
+│  • Consul SD         • Business Metrics                    │
+│  • 30-day retention  • JVM & Infrastructure                │
+│                                                             │
+└────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────┐
+│              DISTRIBUTED TRACING (MDC)                      │
+├────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Request → Frontend (request_id: UUID)                     │
+│              │                                              │
+│              ↓ (X-Request-ID header)                       │
+│           Backend (propagates request_id)                  │
+│              │                                              │
+│              ↓ (logs with same request_id)                 │
+│           Kibana (query: request_id:"UUID")                │
+│           → See complete request flow!                     │
+│                                                             │
+└────────────────────────────────────────────────────────────┘
 ```
+
+### Configuration Structure
+
+All Docker service configurations are centralized in `docker-configs/`:
+
+```
+docker-configs/
+├── prometheus-config/
+│   └── prometheus.yml              # Scrape config with Consul service discovery
+├── grafana-config/
+│   ├── provisioning/
+│   │   ├── datasources/
+│   │   │   └── prometheus.yml      # Auto-provision Prometheus datasource
+│   │   └── dashboards/
+│   │       └── dashboard.yml       # Auto-load dashboard configuration
+│   └── dashboards/
+│       ├── person-front-dashboard.json         # Frontend metrics
+│       ├── person-service-dashboard.json       # Business metrics
+│       └── jvm-metrics-dashboard.json          # JVM & infrastructure
+└── logstash-config/
+    └── logstash-tcp-input.conf     # Log ingestion pipeline (TCP :4560)
+```
+
+**Why Centralized?**
+- Single location for all infrastructure configs
+- Easier to version control and manage
+- Clear separation from application code
+- Simplified Docker Compose volume mounts
 
 ## 🔨 Building the Project
 
@@ -355,37 +456,85 @@ curl http://localhost:8081/actuator/prometheus | grep person_
 curl 'http://localhost:9090/api/v1/query?query=person_operations_total'
 ```
 
-**Custom Application Metrics** (defined in `MetricsConfig.groovy`):
+**Custom Application Metrics** (32 total beans defined in `MetricsConfig.groovy`):
 
-**Backend Service Metrics** (`spring-boot-service`):
-- `person.operations.total` - CRUD operations (create, read, update, delete, list)
-- `person.service.execution.time` - Service method execution times
-- `person.repository.total` - Repository count gauge
-- `person.api.requests.total` - REST API endpoint calls
+**Backend Service Metrics** (`spring-boot-service` - 21 beans):
+- `person.operations.total` - Counter for CRUD operations (create, read, update, delete, list) with success/failed result tags
+- `person.service.execution.time` - Timer for service method execution times by operation type
+- `person.repository.total` - Gauge tracking current person count in database
+- `person.api.requests.total` - Counter for REST API endpoint calls by endpoint and HTTP method
+- `person.validation.errors.total` - Counter for validation failures by field name
+- `person.bootstrap.load.total` - Counter for initial data loading events
+- `person.bootstrap.execution.time` - Timer for bootstrap data load duration
+- `person.operation.duration` - Histogram for operation duration distribution (p50, p95, p99)
 
-**Frontend Metrics** (`spring-boot-front`):
-- `person.frontend.requests.total` - Frontend operations (list, create, delete)
-- `person.frontend.backend.errors.total` - Backend communication failures
-- `person.frontend.page.render.time` - Page render performance
+**Frontend Metrics** (`spring-boot-front` - 11 beans):
+- `person.frontend.requests.total` - Counter for frontend operations (list, view, create, update, delete)
+- `person.frontend.backend.errors.total` - Counter for backend communication failures
+- `person.frontend.page.render.time` - Timer for page render performance with percentile tracking
 
-**Architecture**: Metrics are defined as Spring beans in centralized `MetricsConfig` classes and injected via `@Autowired` + `@Qualifier`.
+**Architecture**: 
+- Metrics are defined as `@Bean` in centralized `MetricsConfig` classes
+- Injected via `@Autowired` + `@Qualifier` for type safety
+- All metrics use Micrometer registry
+- Exposed at `/actuator/prometheus` endpoint
+- Scraped by Prometheus every 15 seconds
 
 ### Grafana Dashboards
 
-**Grafana** (http://localhost:3000) provides real-time visualization:
+**Grafana** (http://localhost:3000) provides real-time visualization with 3 pre-configured dashboards:
 
 - **Default credentials**: admin / admin
-- **Pre-configured datasource**: Prometheus (auto-connected)
-- **Pre-loaded dashboards**: 
-  - Business metrics (person operations, API usage)
-  - JVM metrics (heap, threads, GC)
-  - System metrics (CPU, memory)
+- **Datasource**: Prometheus (auto-provisioned on startup)
+- **Auto-refresh**: Configurable (5s, 10s, 30s, 1m)
 
-**Create custom dashboard**:
-1. Open http://localhost:3000
-2. Navigate to Dashboards → New Dashboard
-3. Add Panel → Select Prometheus datasource
-4. Use PromQL queries: `rate(person_operations_total[5m])`
+**Pre-loaded Dashboards**:
+
+1. **Person Frontend Service Dashboard**
+   - Frontend operation counters (list, view, create, update, delete)
+   - Success rate gauge
+   - Backend communication errors
+   - Page render time with percentiles (p50, p95, p99)
+   - Operations over time visualization
+
+2. **Person Service - Business Metrics Dashboard**
+   - Total persons in database (gauge)
+   - CRUD operations rate by type
+   - API request rate by endpoint
+   - Operation duration percentiles
+   - Validation errors by field
+   - Bootstrap data loading metrics
+
+3. **Person Service - JVM & Infrastructure Dashboard**
+   - JVM heap memory usage (used vs max)
+   - JVM non-heap memory (metaspace, code cache)
+   - Garbage collection pause time
+   - Thread count (live, daemon)
+   - HikariCP connection pool utilization
+   - Process and system CPU usage
+   - HTTP request rate and response times
+
+**Dashboard Features**:
+- Time range selector (Last 5m, 15m, 1h, 6h, 24h, 7d, custom)
+- Auto-refresh with configurable intervals
+- Panel zoom and inspect
+- Query editor with PromQL syntax
+- Legend with min/max/avg/current values
+- Export to PNG/PDF
+
+**Access Dashboards**:
+1. Login at http://localhost:3000 (admin/admin)
+2. Click "Dashboards" icon (☰) in left sidebar
+3. Select dashboard from list
+4. Use time picker and refresh controls
+
+**Create Custom Dashboard**:
+1. Navigate to Dashboards → New Dashboard
+2. Add Panel → Select Prometheus datasource
+3. Use PromQL queries:
+   - `rate(person_operations_total[5m])` - Operations per second
+   - `person_repository_count` - Current person count
+   - `histogram_quantile(0.95, person_operation_duration_bucket)` - p95 latency
 
 ### Consul Health Dashboard
 
@@ -522,25 +671,25 @@ docker compose logs mysql
 
 ## 📖 Documentation
 
-**Quick Links**: [Documentation Index](dev-docs/INDEX.md) | [Acronyms Glossary](dev-docs/INDEX.md#acronyms--terminology)
+**Quick Links**: [Documentation Index](docs/INDEX.md) | [Acronyms Glossary](docs/INDEX.md#acronyms--terminology)
 
 ### Complete Guides
 
 | Guide | Description | Lines | Status |
 |-------|-------------|-------|--------|
-| **[Documentation Index](dev-docs/INDEX.md)** | Central hub with file descriptions and acronyms glossary | 539 | ✅ |
-| **[Docker Commands](dev-docs/docker-commands.md)** | Complete Docker & Docker Compose reference | 600 | ✅ |
-| **[Consul Service Discovery](dev-docs/consul-service-discovery.md)** | Service registry, health checks, load balancing | 1,490 | ✅ |
-| **[ELK Stack Logging](dev-docs/elk-stack-logging.md)** | Centralized logging with Elasticsearch, Logstash, Kibana | 2,040 | ✅ |
-| **[Metrics & Monitoring](dev-docs/metrics-monitoring.md)** | Application metrics, dashboards, alerting | 1,900 | ✅ |
+| **[Documentation Index](docs/INDEX.md)** | Central hub with file descriptions and acronyms glossary | 539 | ✅ |
+| **[Docker Commands](docs/docker-commands.md)** | Complete Docker & Docker Compose reference | 600 | ✅ |
+| **[Consul Service Discovery](docs/consul-service-discovery.md)** | Service registry, health checks, load balancing | 1,490 | ✅ |
+| **[ELK Stack Logging](docs/elk-stack-logging.md)** | Centralized logging with Elasticsearch, Logstash, Kibana (with 4 Kibana screenshots) | 2,278 | ✅ |
+| **[Metrics & Monitoring](docs/metrics-monitoring.md)** | Application metrics, Prometheus, Grafana dashboards (with 5 Grafana screenshots) | 2,133 | ✅ |
 
 ### Quick Start by Role
 
-**New Developers**: Start with [Docker Commands](dev-docs/docker-commands.md) → [Consul Guide](dev-docs/consul-service-discovery.md) → [ELK Logging](dev-docs/elk-stack-logging.md)
+**New Developers**: Start with [Docker Commands](docs/docker-commands.md) → [Consul Guide](docs/consul-service-discovery.md) → [ELK Logging](docs/elk-stack-logging.md)
 
-**Operations/DevOps**: Start with [Docker Commands](dev-docs/docker-commands.md) → [Metrics & Monitoring](dev-docs/metrics-monitoring.md) → [ELK Logging](dev-docs/elk-stack-logging.md)
+**Operations/DevOps**: Start with [Docker Commands](docs/docker-commands.md) → [Metrics & Monitoring](docs/metrics-monitoring.md) → [ELK Logging](docs/elk-stack-logging.md)
 
-**Troubleshooting**: Check [Documentation Index](dev-docs/INDEX.md#quick-start) for issue-specific guide recommendations
+**Troubleshooting**: Check [Documentation Index](docs/INDEX.md#quick-start) for issue-specific guide recommendations
 
 ## 🤝 Contributing
 
