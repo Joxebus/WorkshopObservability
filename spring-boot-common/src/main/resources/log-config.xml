@@ -43,9 +43,19 @@
         <level value="INFO"/>
     </logger>
 
-    <root level="debug">
-        <appender-ref ref="logstash"/>
-        <appender-ref ref="CONSOLE"/>
-    </root>
+    <!-- Default profile: Console only for local development -->
+    <springProfile name="default">
+        <root level="debug">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Docker profile: Console + Logstash for containerized deployment -->
+    <springProfile name="docker">
+        <root level="debug">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="logstash"/>
+        </root>
+    </springProfile>
 
 </configuration>

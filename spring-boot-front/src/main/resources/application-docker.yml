@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    consul:
+      host: consul
+      port: 8500
+
+logstash:
+  host: logstash
+
+logging:
+  config: classpath:log-config.xml
+  level:
+    io.github.joxebus: INFO
+    io.github.joxebus.filter: DEBUG
