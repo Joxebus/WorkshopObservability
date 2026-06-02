@@ -74,32 +74,32 @@ consul-elk-sample/
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Consul (Service Registry)                 │
-│                         :8500                                │
+│                    Consul (Service Registry)                │
+│                         :8500                               │
 └─────────────────────────────────────────────────────────────┘
           ↑                                    ↑
      (register)                           (discover)
           │                                    │
-    ┌─────┴────────────────────────────────────┴──────┐
+    ┌─────┴────────────────────────────────────┴───────┐
     │                                                  │
-    │  Frontend (person-front)                        │
-    │  :8080                                          │
-    │  ┌─────────────────────────────────┐            │
-    │  │ @LoadBalanced RestTemplate      │            │
-    │  │ (Client-Side Load Balancing)    │            │
-    │  └─────────────────────────────────┘            │
+    │  Frontend (person-front)                         │
+    │  :8080                                           │
+    │  ┌─────────────────────────────────┐             │
+    │  │ @LoadBalanced RestTemplate      │             │
+    │  │ (Client-Side Load Balancing)    │             │
+    │  └─────────────────────────────────┘             │
     │           │ round-robin distribution             │
     │           ↓                                      │
-    │  ┌──────────┬──────────┬──────────┐             │
-    │  │ Service-1│ Service-2│ Service-3│             │
-    │  │ :8081    │ :8082    │ :8083    │             │
-    │  └──────────┴──────────┴──────────┘             │
+    │  ┌──────────┬──────────┬──────────┐              │
+    │  │ Service-1│ Service-2│ Service-3│              │
+    │  │ :8081    │ :8082    │ :8083    │              │
+    │  └──────────┴──────────┴──────────┘              │
     │           │                                      │
     │           ↓                                      │
-    │  ┌────────────────────────────────┐             │
-    │  │  MySQL 8.0 (Shared Database)   │             │
+    │  ┌────────────────────────────────┐              │
+    │  │  MySQL 8.0 (Shared Database)   │              │
     │  │  :3306                          │             │
-    │  └────────────────────────────────┘             │
+    │  └────────────────────────────────┘              │
     └──────────────────────────────────────────────────┘
 ```
 
@@ -107,52 +107,52 @@ consul-elk-sample/
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                    LOGGING PIPELINE                         │
+│                    LOGGING PIPELINE                        │
 ├────────────────────────────────────────────────────────────┤
-│                                                             │
+│                                                            │
 │  All Services (MDC + JSON)                                 │
-│         │                                                   │
+│         │                                                  │
 │         ↓ (TCP :4560)                                      │
-│  ┌──────────────┐    ┌──────────────┐    ┌─────────────┐ │
-│  │  Logstash    │ → │Elasticsearch │ → │   Kibana    │ │
-│  │   :4560      │    │    :9200     │    │   :5601     │ │
-│  └──────────────┘    └──────────────┘    └─────────────┘ │
-│  • Log aggregation   • Log storage      • Log analytics  │
-│  • JSON parsing      • Full-text search • Visualization  │
-│                                                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌─────────────┐   │
+│  │  Logstash    │ →  │ Elasticsearch│ →  │   Kibana    │   │
+│  │   :4560      │    │    :9200     │    │   :5601     │   │
+│  └──────────────┘    └──────────────┘    └─────────────┘   │
+│  • Log aggregation   • Log storage      • Log analytics    │
+│  • JSON parsing      • Full-text search • Visualization    │
+│                                                            │
 └────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────┐
-│                   METRICS PIPELINE                          │
+│                   METRICS PIPELINE                         │
 ├────────────────────────────────────────────────────────────┤
-│                                                             │
+│                                                            │
 │  All Services (/actuator/prometheus)                       │
-│         │                                                   │
+│         │                                                  │
 │         ↓ (scrape every 15s)                               │
-│  ┌──────────────┐    ┌──────────────┐                     │
-│  │ Prometheus   │ → │   Grafana    │                     │
-│  │   :9090      │    │    :3000     │                     │
-│  └──────────────┘    └──────────────┘                     │
+│  ┌──────────────┐    ┌──────────────┐                      │
+│  │ Prometheus   │ →  │   Grafana    │                      │
+│  │   :9090      │    │    :3000     │                      │
+│  └──────────────┘    └──────────────┘                      │
 │  • Metrics storage   • 3 Dashboards:                       │
 │  • PromQL queries    • Person Frontend                     │
 │  • Consul SD         • Business Metrics                    │
 │  • 30-day retention  • JVM & Infrastructure                │
-│                                                             │
+│                                                            │
 └────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────┐
-│              DISTRIBUTED TRACING (MDC)                      │
+│              DISTRIBUTED TRACING (MDC)                     │
 ├────────────────────────────────────────────────────────────┤
-│                                                             │
+│                                                            │
 │  Request → Frontend (request_id: UUID)                     │
-│              │                                              │
+│              │                                             │
 │              ↓ (X-Request-ID header)                       │
 │           Backend (propagates request_id)                  │
-│              │                                              │
+│              │                                             │
 │              ↓ (logs with same request_id)                 │
 │           Kibana (query: request_id:"UUID")                │
 │           → See complete request flow!                     │
-│                                                             │
+│                                                            │
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -183,6 +183,48 @@ docker-configs/
 - Easier to version control and manage
 - Clear separation from application code
 - Simplified Docker Compose volume mounts
+
+### Configuration Architecture
+
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ Local Development (mvn spring-boot:run)                         │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ Profile: default                                                │
+  │ Config:  application.yml                                        │
+  │          ├── spring.cloud.consul.host: localhost                │
+  │          ├── logstash.host: localhost (unused)                  │
+  │          └── logging.config: classpath:log-config.xml           │
+  │                                                                 │
+  │ Logging: log-config.xml                                         │
+  │          └── <springProfile name="default">                     │
+  │              └── CONSOLE appender only                          │
+  │                                                                 │
+  │ Database: H2 file-based                                         │
+  │ Service Discovery: localhost:8500                               │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │ Docker Deployment (docker compose up)                           │
+  ├─────────────────────────────────────────────────────────────────┤
+  │ Profile: docker (activated via Dockerfile CMD)                  │
+  │ Config:  application.yml + application-docker.yml               │
+  │          ├── spring.cloud.consul.host: consul                   │
+  │          ├── logstash.host: logstash                            │
+  │          └── logging.config: classpath:log-config.xml           │
+  │                                                                 │
+  │ Logging: log-config.xml                                         │
+  │          └── <springProfile name="docker">                      │
+  │              ├── CONSOLE appender (docker compose logs)         │
+  │              └── LOGSTASH appender (TCP:4560)                   │
+  │                  └── Elasticsearch (indexed)                    │
+  │                      └── Kibana (queryable)                     │
+  │                                                                 │
+  │ Database: MySQL 8.0 (shared)                                    │
+  │ Service Discovery: consul:8500 (container)                      │
+  └─────────────────────────────────────────────────────────────────┘
+
+```
 
 ## 🔨 Building the Project
 
@@ -671,25 +713,25 @@ docker compose logs mysql
 
 ## 📖 Documentation
 
-**Quick Links**: [Documentation Index](docs/INDEX.md) | [Acronyms Glossary](docs/INDEX.md#acronyms--terminology)
+**Quick Links**: [Documentation Index] (dev-docs/INDEX.md) | [Acronyms Glossary] (dev-docs/INDEX.md#acronyms--terminology)
 
 ### Complete Guides
 
-| Guide | Description | Lines | Status |
-|-------|-------------|-------|--------|
-| **[Documentation Index](docs/INDEX.md)** | Central hub with file descriptions and acronyms glossary | 539 | ✅ |
-| **[Docker Commands](docs/docker-commands.md)** | Complete Docker & Docker Compose reference | 600 | ✅ |
-| **[Consul Service Discovery](docs/consul-service-discovery.md)** | Service registry, health checks, load balancing | 1,490 | ✅ |
-| **[ELK Stack Logging](docs/elk-stack-logging.md)** | Centralized logging with Elasticsearch, Logstash, Kibana (with 4 Kibana screenshots) | 2,278 | ✅ |
-| **[Metrics & Monitoring](docs/metrics-monitoring.md)** | Application metrics, Prometheus, Grafana dashboards (with 5 Grafana screenshots) | 2,133 | ✅ |
+| Guide                                                            | Description | Lines | Status |
+|------------------------------------------------------------------|-------------|-------|--------|
+| **[Documentation Index](dev-docs/INDEX.md)**                     | Central hub with file descriptions and acronyms glossary | 539 | ✅ |
+| **[Docker Commands](dev-docs/docker-commands.md)**                   | Complete Docker & Docker Compose reference | 600 | ✅ |
+| **[Consul Service Discovery](dev-docs/consul-service-discovery.md)** | Service registry, health checks, load balancing | 1,490 | ✅ |
+| **[ELK Stack Logging](dev-docs/elk-stack-logging.md)**               | Centralized logging with Elasticsearch, Logstash, Kibana (with 4 Kibana screenshots) | 2,278 | ✅ |
+| **[Metrics & Monitoring](dev-docs/metrics-monitoring.md)**           | Application metrics, Prometheus, Grafana dashboards (with 5 Grafana screenshots) | 2,133 | ✅ |
 
 ### Quick Start by Role
 
-**New Developers**: Start with [Docker Commands](docs/docker-commands.md) → [Consul Guide](docs/consul-service-discovery.md) → [ELK Logging](docs/elk-stack-logging.md)
+**New Developers**: Start with [Docker Commands] (dev-docs/docker-commands.md) → [Consul Guide](dev-docs/consul-service-discovery.md) → [ELK Logging] (dev-docs/elk-stack-logging.md)
 
-**Operations/DevOps**: Start with [Docker Commands](docs/docker-commands.md) → [Metrics & Monitoring](docs/metrics-monitoring.md) → [ELK Logging](docs/elk-stack-logging.md)
+**Operations/DevOps**: Start with [Docker Commands] (dev-docs/docker-commands.md) → [Metrics & Monitoring] (dev-docs/metrics-monitoring.md) → [ELK Logging] (dev-docs/elk-stack-logging.md)
 
-**Troubleshooting**: Check [Documentation Index](docs/INDEX.md#quick-start) for issue-specific guide recommendations
+**Troubleshooting**: Check [Documentation Index] (dev-docs/INDEX.md#quick-start) for issue-specific guide recommendations
 
 ## 🤝 Contributing
 
